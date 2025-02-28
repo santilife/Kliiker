@@ -1,0 +1,33 @@
+body{
+    margin: 0;
+    overflow: hidden;
+}
+
+
+
+.form-login{
+    display: flex;
+    padding: 300px;
+    justify-content: center;
+
+    && .in-user{
+        margin-bottom: 10px;
+    }
+    
+    .in-pass{
+        margin-bottom: 10px;
+    }
+
+    .tittle{
+        margin: 10px;
+    }
+
+    .in-submit{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+}   
+
