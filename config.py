@@ -1,11 +1,13 @@
-class databaseConfig():
+class Config:
+    SECRET_KEY = "inexorable/06"
+
+
+class databaseConfig:
     DEBUG = True
-    MYSQL_HOST = 'localhost'
-    MYSQL_USER = 'root'
-    MYSQL_PASSWORD = ''
-    MYSQL_DB = 'Kliiker'
-    
-    
-config = {
-    'development': databaseConfig
-}
+    MYSQL_HOST = "localhost"
+    MYSQL_USER = "root"
+    MYSQL_PASSWORD = ""
+    MYSQL_DB = "Kliiker"
+
+
+config = {"development": databaseConfig}
