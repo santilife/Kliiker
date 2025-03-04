@@ -1,6 +1,7 @@
-# routes/mostrarKliikler/viewKliiker.py
 from flask import render_template, Blueprint
 from database.config import mysql
+from datetime import datetime
+
 
 kliiker_table = Blueprint("kliiker_table", __name__)
 
@@ -36,6 +37,19 @@ def obtener_datos():
         resultados = [dict(zip(column_names, row)) for row in datos]
         
         cursor.close()
+        
+        # Conversión segura de fechas
+        for item in datos:
+            if isinstance(item['fecha'], str):
+                try:
+                    item['fecha'] = datetime.strptime(
+                        item['fecha'], 
+                        '%Y-%m-%d %H:%M:%S'  # Ajustar según formato real
+                    )
+                except:
+                    item['fecha'] = None
+        
+        return datos
         return resultados
 
     except Exception as err:
