@@ -1,0 +1,107 @@
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administrar gestiones</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+       body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+          }
+          th,
+          td {
+            border: 1px solid #111010;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+          tr:hover {
+            background-color: #f5f5f5;
+          }
+    </style>
+  </head>
+  <body>
+    <div class="nab">
+      <div>{{session["usuario"]}} {{session["rol"]}}</div>
+
+      <nav class="menu">
+        <ul>
+          <li><a href="../estadisticas/estadisticas.html">Estadisticas</a></li>
+          <li><a href="../formGestion/gestion.html">Gestión</a></li>
+          <li><a href="../administrativo/">Administrativo</a></li>
+          <li><a href="../asesor/">Asesor</a></li>
+        </ul>
+      </nav>
+
+      <img src="../../static/img/LogoKliiker.png" alt="" />
+    </div>
+
+    <div class="main-content">
+      <input type="text" class="search" placeholder="Buscar" />
+
+      <img src="../../static/img/LogoAndes.png" alt="" />
+
+      <div class="tabs">
+        <a class="tab" href="#">Gestión</a>
+        <a class="tab" href="#">Historial</a>
+      </div>
+    </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>ID Kliiker</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Celular</th>
+              <th>Código</th>
+              <th>Estado</th>
+              <th>Tpificación</th>
+              <th>Cantidad de gestiones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for kliikler in kliiklers %}
+            <tr>
+              <td>{{ kliikler.id_kliiker }}</td>
+              <td>{{ kliikler.nombre }}</td>
+              <td>{{ kliikler.apellido }}</td>
+              <td>{{ kliikler.celular }}</td>
+              <td>{{ 'Sí' if kliikler.codigo else 'No' }}</td>
+              <td>{{ 'Gestionable' if kliikler.estado else 'No Gestionable' }}</td>
+              <td>{{ kliikler.tipificacion }}</td>
+              <td>{{ kliikler.cantidad_gestiones }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p>No hay datos disponibles.</p>
+       
+    </html>
+  </body>
+</html>
