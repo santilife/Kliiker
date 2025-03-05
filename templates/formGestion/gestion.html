@@ -1,107 +1,167 @@
-
-
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Administrar gestiones</title>
-    <link rel="stylesheet" href="style.css" />
-
-    <style>
-       body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
-          th,
-          td {
-            border: 1px solid #111010;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-          }
-          tr:nth-child(even) {
-            background-color: #f9f9f9;
-          }
-          tr:hover {
-            background-color: #f5f5f5;
-          }
-    </style>
+    <title>Document</title>
   </head>
   <body>
-    <div class="nab">
-      <div>{{session["usuario"]}} {{session["rol"]}}</div>
+    <h1>Hola {{session["usuario"]}}</h1>
 
-      <nav class="menu">
+    <!-- <a href="{{url_for('.logout')}}">Cerrar sesión</a> -->
+    <!--Barra navegación administrador-->
+      <nav class="menú">
         <ul>
-          <li><a href="../estadisticas/estadisticas.html">Estadisticas</a></li>
-          <li><a href="../formGestion/gestion.html">Gestión</a></li>
-          <li><a href="../administrativo/">Administrativo</a></li>
-          <li><a href="../asesor/">Asesor</a></li>
+          <li><a href="#">Estadisticas</a></li>
+          <li><a href="#">Gestión</li>
+          <li><a href="#">Administrativo</li>
+          <li><a href="#">Asesor</li>
+          <li><a href="#">Cerrar sesión</li>
         </ul>
+        <img class="img"src="../../static/img/LogoKliiker.png" alt="">
       </nav>
 
-      <img src="../../static/img/LogoKliiker.png" alt="" />
-    </div>
+    <!--Buscar-->
+    <div class="main-contener">
+      <input type="search" class="search-bar" name="" placeholder="Buscar" >
 
-    <div class="main-content">
-      <input type="text" class="search" placeholder="Buscar" />
+      <img class="img" src="../../static/img/LogoAndes.png" alt="">
 
-      <img src="../../static/img/LogoAndes.png" alt="" />
-
+    <!--Botones de gestión y Historial-->
       <div class="tabs">
-        <a class="tab" href="#">Gestión</a>
-        <a class="tab" href="#">Historial</a>
+        <button class="button-tabs">Gestión</button>
+        <button class="button-tabs">Historial</button>
       </div>
     </div>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>ID Kliiker</th>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Celular</th>
-              <th>Código</th>
-              <th>Estado</th>
-              <th>Tpificación</th>
-              <th>Cantidad de gestiones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for kliikler in kliiklers %}
-            <tr>
-              <td>{{ kliikler.id_kliiker }}</td>
-              <td>{{ kliikler.nombre }}</td>
-              <td>{{ kliikler.apellido }}</td>
-              <td>{{ kliikler.celular }}</td>
-              <td>{{ 'Sí' if kliikler.codigo else 'No' }}</td>
-              <td>{{ 'Gestionable' if kliikler.estado else 'No Gestionable' }}</td>
-              <td>{{ kliikler.tipificacion }}</td>
-              <td>{{ kliikler.cantidad_gestiones }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <p>No hay datos disponibles.</p>
-       
-    </html>
+
+    <!--Tabla Gestión-->
+    <table class="tabla-datos">
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Celular</th>
+        <th>Código</th>
+        <th>Id Kliiker</th>
+        <th>Tipificación</th>
+        <th>Cantidad de gestiones</th>
+      </tr>
+      {% for fila in datos %}
+      <tr>
+        <td>
+          <button
+            class="btn-nombre"
+            data-bs-toggle="modal"
+            data-bs-target="#detalleModal"
+            data-nombre="{{ fila.nombre }}"
+            data-apellido="{{ fila.apellido }}"
+            data-celular="{{ fila.celular }}"
+            data-correo="{{ fila.correo }}"
+            data-id="{{ fila.id_kliiker }}"
+            data-fecha="{{ fila.fecha.strftime('%Y-%m-%dT%H:%M') if fila.fecha else '' }}"
+            data-codigo="{{ '1' if fila.codigo else '0' }}"
+            data-venta="{{ '1' if fila.venta else '0' }}"
+          >
+            {{ fila.nombre }}
+          </button>
+        </td>
+        <td>{{ fila.apellido }}</td>
+        <td>{{ fila.celular }}</td>
+        <td>{{ 'Sí' if fila.codigo else 'No' }}</td>
+        <td>{{ fila.id_kliiker }}</td>
+          </tr>
+      {% endfor %}
+    </table>
+
+    <!-- Modal de Detalles -->
+    <div class="modal fade" id="detalleModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Gestión</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formEdicion" action="{{url_for('models.actualizar.update_users')}}" method="POST">
+              <input type="hidden" name="id" id="modalId">
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Id llamada</label>
+                  <input type="text" class="form-control" name="id_llamada" id="modal" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Estado</label>
+                  <select name="select">
+                    <option value="Nuevos">Nuevos</option>
+                    <option value="Llamada1">Llamada 1</option>
+                    <option value="Llamada2">Llamada 2</option>
+                    <option value="Llamada3">Llamada 3</option>
+                    <option value="Llamada4">Llamada 4</option>
+                    <option value="Descartados">Descartados</option>
+                  </select>
+                  <input type="text" class="form-control" name="estado" id="modalEstado" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Tipificación</label>
+                  <select name="tipificacion" class="select">
+                    <option value="Nuevos">No contesta</option>
+                    <option value="Llamada1">Buzón de voz</option>
+                    <option value="Llamada2">Información general</option>
+                    <option value="Llamada3">Sin interes</option>
+                    <option value="Llamada4">Equivocado</option>
+                    <option value="Descartados">Registro exitoso</option>
+                  </select>
+                  <input type="text" class="form-control" name="tipificacion" id="modalTipificacion" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Motivos no interes</label>
+                  <select name="motivo_no_interes" class="select">
+                    <option value="Consiguio trabajo">Consiguio trabajo</option>
+                    <option value="Precio alto">Precio alto</option>
+                    <option value="Confusión oferta de empleo">Confusión oferta de empleo</option>
+                    <option value="Pensaba que era diferente">Pensaba que era diferente</option>
+                    <option value="Estafa">Estafa</option>
+                  </select>
+                  <input type="text" class="form-control" name="motivoNoInteres" id="modalMotivoNoInteres" disabled hidden>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Canal</label>
+                  <select name="canal" class="select">
+                    <option value="Whatsapp">Whatsapp</option>
+                    <option value="Via telefonica">Via telefonica</option>
+                  </select>
+                  <input type="text" class="form-control" name="canal" id="modalCanal">
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <label class="form-check-label">Tipo gestión</label>
+                    <select name="select">
+                      <option value="Nuevos">Entrada</option>
+                      <option value="Llamada1">Salida</option>
+                    </select>
+                    <input type="text" class="form-control" name="tipoGestion" id="modalTipoGestion">
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="date">
+                    <label class="form-check-label">Fecha próxima a llamar</label>
+                    <input class="form-control" name="fechaProxima" id="modalFechaProxima">
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" form="formEdicion" class="btn btn-primary">Guardar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <script></script>
+    </body>
   </body>
 </html>

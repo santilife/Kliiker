@@ -10,6 +10,12 @@ from flask import (
     session,
     Response,
 )
+from routes.rutas_generales import (
+    administradores,
+    iniciar_sesion,
+    asesores_generales,
+    auth,
+)
 
 # Importación de la conexión a la base de datos
 from database.config import mysql
@@ -18,12 +24,9 @@ from database.config import mysql
 from werkzeug.security import check_password_hash
 
 # Inicialización de la aplicación Flask
-app = Flask(__name__)
 
-# Definición de Blueprints para diferentes rutas
-iniciar_sesion = Blueprint("iniciar_sesion", __name__)
-administradores = Blueprint("administradores", __name__)
-asesores_generales = Blueprint("asesores_generales", __name__)
+
+app = Flask(__name__)
 
 
 # Ruta para el panel de administradores
@@ -42,10 +45,6 @@ def asesor():
 @iniciar_sesion.route("/", methods=["GET", "POST"])
 def login():
     return render_template("login.html")
-
-
-# Blueprint para la autenticación
-auth = Blueprint("auth", __name__)
 
 
 # Ruta para procesar el inicio de sesión

@@ -6,15 +6,14 @@ from flask import Flask, render_template, request, session, redirect, url_for
 from flask_mysqldb import MySQL
 
 # Importación de blueprints desde el módulo de autenticación
-from routes.auth_users import auth, iniciar_sesion, administradores, asesores_generales
-from routes.mostrarKliikler.viewKliiker import kliiker_table
-from routes.route_gestion import ruta_gestion
+from routes.rutas_generales import (
+    auth,
+    iniciar_sesion,
+    administradores,
+    asesores_generales,
+)
+from models.mostrar.view_kliikers import kliiker_table
 
-# from .routes.mostrarKliikler.viewKliiker import obtener_datos
-
-# from routes.admin.admin import admin_bp
-# from routes.asesor.asesor import asesor_bp
-# from routes.auth_routes import routes_auth
 from database.config import db_conexion, mysql
 
 # Inicialización de la aplicación Flask
@@ -39,21 +38,8 @@ app.register_blueprint(asesores_generales)
 
 # Mostrar tablas
 app.register_blueprint(kliiker_table)
-# app.register_blueprint(obtener_datos)
-
-# ruta form gestion
-app.register_blueprint(ruta_gestion)
-
-# Blueprint para verificaciones de roles
-# app.register_blueprint(admin_bp, url_prefix="/admin")
-# app.register_blueprint(asesor_bp, url_prefix="/asesor")
-
 
 # Punto de entrada de la aplicación
 if __name__ == "__main__":
     # Inicia el servidor en modo debug en el puerto 5000
-    app.run(debug=True, port=5000, host="0.0.0.0")
-
-
-# Ruta para mostrar la tabla
-# app.route("/")(obtener_datos)
+    app.run(debug=True, port=5000, host="0.0.0.0", threaded=True)
