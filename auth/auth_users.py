@@ -19,8 +19,8 @@ from database.config import mysql
 # Importación de la función de seguridad para verificar contraseñas
 from werkzeug.security import check_password_hash
 
-# Importacion de functools
-import functools
+# Importacion de los decorators
+from auth.decorators import login_required, role_required
 
 # Inicialización de la aplicación Flask
 
@@ -33,41 +33,26 @@ asesores_generales = Blueprint("asesores_generales", __name__)
 auth = Blueprint("auth", __name__, template_folder="templates")
 
 
-# ----------------- Se crea el decorador para login_required ----------------- #
-
-
-def login_required(route):
-    @functools.wraps(route)
-    def router_wrapper(*args, **kwargs):
-        if not session.get("logueado"):  # Verifica si el usuario NO está logueado
-            return redirect(url_for("iniciar_sesion.login"))
-        return route(*args, **kwargs)
-
-    return router_wrapper
-
-
-# Se crea el decorador para restringir las paginas de Administrador y de Asesor
-def role_required(role):
-    def decorator(route):
-        @functools.wraps(route)
-        def wrapper(*args, **kwargs):
-            if session.get("rol") != role:
-                return redirect(
-                    url_for("iniciar_sesion.login")
-                )  # O en vez de redirijir a login muestre un error 403
-            return route(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 # Ruta para el panel de administradores
 @administradores.route("/admin")
 @login_required  # Se aplica el decorador para login_required
 @role_required("Administrador")
 def admin():
     return mostrar_tabla()
+
+
+@administradores.route("/admin/downloadDB")
+@login_required  # Se aplica el decorador para login_required
+@role_required("Administrador")
+def downloadDB():
+    return render_template("descargarDB/downloadDB.html")
+
+
+@administradores.route("/admin/listDB")
+@login_required  # Se aplica el decorador para login_required
+@role_required("Administrador")
+def listDB():
+    return render_template("descargarDB/listDB.html")
 
 
 # Ruta para el panel de asesores generales
