@@ -1,97 +1,178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Panel de Administración</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .navbar-custom {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .logo-header {
+        height: 50px;
+      }
+      .search-container {
+        max-width: 300px;
+      }
+      .tabla-datos {
+        font-size: 0.9rem;
+      }
+      .btn-tab {
+        padding: 0.25rem 0.5rem;
+      }
+      /* Pestañas */
+      .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+        #historialTable {
+            display: none;
+        }
+    </style>
   </head>
   <body>
-    <h1>Hola {{session["usuario"]}}</h1>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+      <div class="container-fluid">
+        <img
+          src="../../static/img/LogoKliiker.png"
+          class="logo-header me-3"
+          alt="Logo Kliiker"
+        />
 
-    <!-- <a href="{{url_for('.logout')}}">Cerrar sesión</a> -->
-    <!--Barra navegación administrador-->
-      <nav class="menú">
-        <ul>
-          <li><a href="#">Estadisticas</a></li>
-          <li><a href="#">Gestión</li>
-          <li><a href="#">Administrativo</li>
-          <li><a href="#">Asesor</li>
-          <li><a href="#">Cerrar sesión</li>
-        </ul>
-        <img class="img"src="../../static/img/LogoKliiker.png" alt="">
-      </nav>
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Estadísticas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Gestión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Administrativo</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#">Asesor</a></li>
+          </ul>
+          <span class="navbar-text me-3">Hola {{session["usuario"]}}</span>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
+            >Cerrar sesión</a
+          >
+        </div>
+      </div>
+    </nav>
 
-    <!--Buscar-->
-    <div class="main-contener">
-      <input type="search" class="search-bar" name="" placeholder="Buscar" >
+    <!-- Contenido principal -->
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="search-container">
+          <input type="search" class="form-control" placeholder="Buscar..." />
+        </div>
+        <img
+          src="../../static/img/LogoAndes.png"
+          class="logo-header"
+          alt="Logo Andes"
+        />
+      </div>
 
-      <img class="img" src="../../static/img/LogoAndes.png" alt="">
-
-    <!--Botones de gestión y Historial-->
+      <!-- Pestañas -->
       <div class="tabs">
-        <button class="button-tabs">Gestión</button>
-        <button class="button-tabs">Historial</button>
+        <button class="tab active" onclick="mostrarTabla('gestion')">Gestión</button>
+        <button class="tab" onclick="mostrarTabla('historial')">Historial</button>
+    </div>
+      <!-- ----------------------------------------------------------------------- -->
+      <!--                              Tabla Gestion                              -->
+      <!-- ----------------------------------------------------------------------- -->
+      <div class="table-responsive" id="gestionTable">
+        <table class="table table-hover tabla-datos" >
+          <thead class="table-light">
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Celular</th>
+              <th>Código</th>
+              <th>ID Kliiker</th>
+              <th>Tipificación</th>
+              <th>Gestiones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in datos %}
+            <tr>
+              <td>
+                <button
+                  class="btn btn-link btn-tab text-decoration-none"
+                  data-bs-toggle="modal"
+                  data-bs-target="#detalleModal"
+                  data-id="{{ fila.id_kliiker }}"
+                  data-nombre="{{ fila.nombre }}"
+                  data-apellido="{{ fila.apellido }}"
+                  data-celular="{{ fila.celular }}"
+                >
+                  {{ fila.nombre }}
+                </button>
+              </td>
+              <td>{{ fila.apellido }}</td>
+              <td>{{ fila.celular }}</td>
+              <td>{{ 'Sí' if fila.nivel else 'No' }}</td>
+              <td>{{ fila.id_kliiker }}</td>
+              <!-- <td>{{ fila.tipificacion }}</td>
+              <td>{{ fila.cantidad_gestiones }}</td> -->
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!--Tabla Gestión-->
-    <table class="tabla-datos">
-      <tr>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Celular</th>
-        <th>Código</th>
-        <th>Id Kliiker</th>
-        <th>Tipificación</th>
-        <th>Cantidad de gestiones</th>
-      </tr>
-      {% for fila in datos %}
-      <tr>
-        <td>
-          <button
-            class="btn-nombre"
-            data-bs-toggle="modal"
-            data-bs-target="#detalleModal"
-            data-nombre="{{ fila.nombre }}"
-            data-apellido="{{ fila.apellido }}"
-            data-celular="{{ fila.celular }}"
-            data-correo="{{ fila.correo }}"
-            data-id="{{ fila.id_kliiker }}"
-            data-fecha="{{ fila.fecha.strftime('%Y-%m-%dT%H:%M') if fila.fecha else '' }}"
-            data-codigo="{{ '1' if fila.codigo else '0' }}"
-            data-venta="{{ '1' if fila.venta else '0' }}"
-          >
-            {{ fila.nombre }}
-          </button>
-        </td>
-        <td>{{ fila.apellido }}</td>
-        <td>{{ fila.celular }}</td>
-        <td>{{ 'Sí' if fila.codigo else 'No' }}</td>
-        <td>{{ fila.id_kliiker }}</td>
-          </tr>
-      {% endfor %}
-    </table>
 
-    <!-- Modal de Detalles -->
+    <!-- Modal -->
     <div class="modal fade" id="detalleModal" tabindex="-1">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Gestión</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <h5 class="modal-title">Gestión de Cliente</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
           </div>
-          <div class="modal-body">
-            <form id="formEdicion" action="{{url_for('models.actualizar.update_users')}}" method="POST">
-              <input type="hidden" name="id" id="modalId">
-              
-              <div class="row g-3">
+          <form method="POST" action="/gestion/actualizar">
+            <div class="modal-body">
+              <input type="hidden" name="id_kliiker" id="modalId" />
+
+              <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                  <label class="form-label">Id llamada</label>
-                  <input type="text" class="form-control" name="id_llamada" id="modal" required>
+                  <label class="form-label">ID Llamada</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="id_llamada"
+                    required
+                  />
                 </div>
+
                 <div class="col-md-6">
                   <label class="form-label">Estado</label>
-                  <select name="select">
+                  <select class="form-select" name="estado">
+                    <option value="Consiguio trabajo">Seleccione</option>
                     <option value="Nuevos">Nuevos</option>
                     <option value="Llamada1">Llamada 1</option>
                     <option value="Llamada2">Llamada 2</option>
@@ -99,69 +180,169 @@
                     <option value="Llamada4">Llamada 4</option>
                     <option value="Descartados">Descartados</option>
                   </select>
-                  <input type="text" class="form-control" name="estado" id="modalEstado" required>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Tipificación</label>
-                  <select name="tipificacion" class="select">
-                    <option value="Nuevos">No contesta</option>
-                    <option value="Llamada1">Buzón de voz</option>
-                    <option value="Llamada2">Información general</option>
-                    <option value="Llamada3">Sin interes</option>
-                    <option value="Llamada4">Equivocado</option>
-                    <option value="Descartados">Registro exitoso</option>
-                  </select>
-                  <input type="text" class="form-control" name="tipificacion" id="modalTipificacion" required>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Motivos no interes</label>
-                  <select name="motivo_no_interes" class="select">
-                    <option value="Consiguio trabajo">Consiguio trabajo</option>
-                    <option value="Precio alto">Precio alto</option>
-                    <option value="Confusión oferta de empleo">Confusión oferta de empleo</option>
-                    <option value="Pensaba que era diferente">Pensaba que era diferente</option>
-                    <option value="Estafa">Estafa</option>
-                  </select>
-                  <input type="text" class="form-control" name="motivoNoInteres" id="modalMotivoNoInteres" disabled hidden>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Canal</label>
-                  <select name="canal" class="select">
-                    <option value="Whatsapp">Whatsapp</option>
-                    <option value="Via telefonica">Via telefonica</option>
-                  </select>
-                  <input type="text" class="form-control" name="canal" id="modalCanal">
-                </div>
-                <div class="col-md-6">
-                  <div class="form-check">
-                    <label class="form-check-label">Tipo gestión</label>
-                    <select name="select">
-                      <option value="Nuevos">Entrada</option>
-                      <option value="Llamada1">Salida</option>
-                    </select>
-                    <input type="text" class="form-control" name="tipoGestion" id="modalTipoGestion">
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="date">
-                    <label class="form-check-label">Fecha próxima a llamar</label>
-                    <input class="form-control" name="fechaProxima" id="modalFechaProxima">
-                  </div>
                 </div>
               </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            <button type="submit" form="formEdicion" class="btn btn-primary">Guardar Cambios</button>
-          </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label">Tipificación</label>
+                  <select class="form-select" name="tipificacion">
+                    <option value="Consiguio trabajo">Seleccione</option>
+                    <option value="No contesta">No contesta</option>
+                    <option value="Buzón de voz">Buzón de voz</option>
+                    <option value="Información general">
+                      Información general
+                    </option>
+                    <option value="Sin interes">Sin interés</option>
+                    <option value="Equivocado">Equivocado</option>
+                    <option value="Registro exitoso">Registro exitoso</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Canal</label>
+                  <select class="form-select" name="canal">
+                    <option value="Consiguio trabajo">Seleccione</option>
+                    <option value="Whatsapp">Whatsapp</option>
+                    <option value="Via telefonica">Vía telefónica</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="form-label">Motivo no interés</label>
+                  <select class="form-select" name="motivo_no_interes">
+                    <option value="Consiguio trabajo">Seleccione</option>
+                    <option value="Consiguio trabajo">Consiguió trabajo</option>
+                    <option value="Precio alto">Precio alto</option>
+                    <option value="Confusión oferta de empleo">
+                      Confusión oferta de empleo
+                    </option>
+                    <option value="Pensaba que era diferente">
+                      Pensaba que era diferente
+                    </option>
+                    <option value="Estafa">Estafa</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Fecha próxima llamada</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    name="fecha_proxima"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Descripción</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="Descripcion"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Guardar Cambios
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
+    <!-- ----------------------------------------------------------------------- -->
+    <!--                             Tabla Historial                             -->
+    <!-- ----------------------------------------------------------------------- -->
+    <div class="table-responsive" id="historialTable">
+      <table class="table table-hover tabla-datos" >
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Celular</th>
+            <th>Id kliiker</th>
+            <th>Código</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Tipificación</th>
+            <th>Canal</th>
+            <th>Tipo gestor</th>
+            <th>Asesor</th>
+            <th>Comentario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in datos %}
+          <tr>
+            <td>{{ fila.nombre }}</td>
+            <td>{{ fila.apellido }}</td>
+            <td>{{ fila.celular }}</td>
+            <td>{{ fila.id_kliiker }}</td>
+            <td>{{ 'Sí' if fila.codigo else 'No' }}</td>
+            <td>{{ fila.fecha }}</td>
+            <td>{{ fila.estado }}</td>
+            <td>{{ fila.tipificacion }}</td>
+            <td>{{ fila.canal }}</td>
+            <td>{{ fila.tipoGestor }}</td>
+            <td>{{ fila.asesor }}</td>
+            <td>{{ fila.comentario }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Script para manejar los datos del modal
+      document
+        .getElementById("detalleModal")
+        .addEventListener("show.bs.modal", function (event) {
+          const button = event.relatedTarget;
+          const modal = this;
 
-    <script></script>
-    </body>
+          modal.querySelector("#modalId").value = button.dataset.id;
+          modal.querySelector('input[name="nombre"]').value =
+            button.dataset.nombre;
+          modal.querySelector('input[name="apellido"]').value =
+            button.dataset.apellido;
+          modal.querySelector('input[name="celular"]').value =
+            button.dataset.celular;
+        });
+
+        /*Función para las tablas gestión y historial*/
+        function mostrarTabla(tipo) {
+        const gestionTab = document.querySelector('.tab:nth-child(1)');
+        const historialTab = document.querySelector('.tab:nth-child(2)');
+        const gestionTable = document.getElementById('gestionTable');
+        const historialTable = document.getElementById('historialTable'); 
+
+        if (tipo === 'gestion') {
+            gestionTab.classList.add('active');
+            historialTab.classList.remove('active');
+            gestionTable.style.display = 'block'; 
+            historialTable.style.display = 'none';
+        } else {
+            historialTab.classList.add('active');
+            gestionTab.classList.remove('active');
+            historialTable.style.display = 'block'; 
+            gestionTable.style.display = 'none';
+        }
+    }
+    </script>
   </body>
 </html>

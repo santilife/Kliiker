@@ -10,12 +10,8 @@ from flask import (
     session,
     Response,
 )
-from routes.rutas_generales import (
-    administradores,
-    iniciar_sesion,
-    asesores_generales,
-    auth,
-)
+
+from models.mostrar.view_kliikers import mostrar_tabla
 
 # Importación de la conexión a la base de datos
 from database.config import mysql
@@ -23,22 +19,63 @@ from database.config import mysql
 # Importación de la función de seguridad para verificar contraseñas
 from werkzeug.security import check_password_hash
 
+# Importacion de functools
+import functools
+
 # Inicialización de la aplicación Flask
 
 
 app = Flask(__name__)
 
+iniciar_sesion = Blueprint("iniciar_sesion", __name__, template_folder="templates")
+administradores = Blueprint("administradores", __name__)
+asesores_generales = Blueprint("asesores_generales", __name__)
+auth = Blueprint("auth", __name__, template_folder="templates")
+
+
+# ----------------- Se crea el decorador para login_required ----------------- #
+
+
+def login_required(route):
+    @functools.wraps(route)
+    def router_wrapper(*args, **kwargs):
+        if not session.get("logueado"):  # Verifica si el usuario NO está logueado
+            return redirect(url_for("iniciar_sesion.login"))
+        return route(*args, **kwargs)
+
+    return router_wrapper
+
+
+# Se crea el decorador para restringir las paginas de Administrador y de Asesor
+def role_required(role):
+    def decorator(route):
+        @functools.wraps(route)
+        def wrapper(*args, **kwargs):
+            if session.get("rol") != role:
+                return redirect(
+                    url_for("iniciar_sesion.login")
+                )  # O en vez de redirijir a login muestre un error 403
+            return route(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 
 # Ruta para el panel de administradores
 @administradores.route("/admin")
+@login_required  # Se aplica el decorador para login_required
+@role_required("Administrador")
 def admin():
-    return render_template("admin/index.html")
+    return mostrar_tabla()
 
 
 # Ruta para el panel de asesores generales
 @asesores_generales.route("/asesor")
+@login_required  # Se aplica el decorador login_required
+@role_required("Operador")
 def asesor():
-    return render_template("asesor/index.html")
+    return render_template("formGestion/gestion.html")
 
 
 # Ruta para mostrar el formulario de inicio de sesión

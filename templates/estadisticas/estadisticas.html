@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estadísticas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <h2>Distribución de Estados</h2>
+    <canvas id="chartEstados"></canvas>
+
+    <h2>Cantidad de Gestiones por Tipificación</h2>
+    <canvas id="chartTipificaciones"></canvas>
+
+    <script>
+      async function cargarDatos() {
+        const response = await fetch("/api/estadisticas");
+        const data = await response.json();
+
+        // 🔹 Configurar gráfico de dona para estados
+        const estadosCtx = document
+          .getElementById("chartEstados")
+          .getContext("2d");
+        new Chart(estadosCtx, {
+          type: "doughnut",
+          data: {
+            labels: data.estados.map((e) => e.estado),
+            datasets: [
+              {
+                data: data.estados.map((e) => e.cantidad),
+                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+              },
+            ],
+          },
+        });
+
+        // 🔹 Configurar gráfico de barras horizontales para tipificaciones
+        const tipCtx = document
+          .getElementById("chartTipificaciones")
+          .getContext("2d");
+        new Chart(tipCtx, {
+          type: "bar",
+          data: {
+            labels: data.tipificaciones.map((t) => t.tipificacion),
+            datasets: [
+              {
+                data: data.tipificaciones.map((t) => t.cantidad),
+                backgroundColor: "blue",
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+          },
+        });
+      }
+
+      cargarDatos();
+    </script>
+  </body>
+</html>

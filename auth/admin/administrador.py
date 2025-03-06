@@ -8,10 +8,6 @@ from flask import (
     Blueprint,
 )
 
-from routes.rutas_generales import admin_bp
-
-app = Flask(__name__)
-
 admin_bp = Blueprint("admin", __name__, template_folder="../templates/admin")
 
 

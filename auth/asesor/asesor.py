@@ -1,6 +1,8 @@
 from flask import Blueprint, session, redirect, url_for, render_template
 from routes.rutas_generales import asesor_bp
 
+asesor_bp = Blueprint("asesor", __name__, template_folder="../templates/asesor")
+
 
 @asesor_bp.route("/")
 def dashboard():
