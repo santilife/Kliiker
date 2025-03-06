@@ -2,6 +2,7 @@
 import os
 from flask_mysqldb import MySQL
 
+
 # Inicialización del objeto MySQL
 mysql = MySQL()
 
@@ -48,3 +49,6 @@ def db_conexion(app):
 
     # Inicialización de la extensión MySQL con la configuración establecida
     mysql.init_app(app)
+
+
+mysql = MySQL()
