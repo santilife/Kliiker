@@ -7,9 +7,10 @@ from flask_login import LoginManager
 # from auth.admin.administrador import admin_bp
 # from auth.asesor.asesor import asesor_bp
 
-from models.mostrar.view_kliikers import kliiker_table
 from database.config import db_conexion, mysql
 from auth.auth_users import administradores, asesores_generales, auth, iniciar_sesion
+
+# from models.descargarDB.downloadDB import downloadDB
 
 # -------------------------- Inicializacion de Flask ------------------------- #
 app = Flask(__name__, template_folder="templates")
@@ -30,7 +31,7 @@ app.register_blueprint(administradores)
 
 app.register_blueprint(asesores_generales)
 
-app.register_blueprint(kliiker_table)
+# app.register_blueprint(downloadDB)
 
 
 # ---- GRAFICAS-----
