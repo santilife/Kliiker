@@ -3,7 +3,7 @@ from database.config import mysql
 from datetime import datetime
 
 
-def obtener_datos():
+def obtener_datos_gestion():
     try:
         cursor = mysql.connection.cursor()
 
@@ -52,7 +52,37 @@ def obtener_datos():
         return []
 
 
+def obtener_datos_historial():
+    try:
+        cursor = mysql.connection.cursor()
+
+        # Verificar primero si la tabla existe
+        cursor.execute("SHOW TABLES LIKE 'kliiker'")
+        if not cursor.fetchone():
+            raise Exception("La tabla 'kliiker' no existe en la base de datos")
+
+        consulta = """
+            SELECT
+            
+        """
+        cursor.execute(consulta)
+
+        # Obtener metadatos ANTES de cerrar el cursor
+        column_names = [column[0] for column in cursor.description]
+        datos2 = cursor.fetchall()
+
+        # Convertir resultados a diccionarios
+        # resultados = [dict(zip(column_names, row)) for row in datos]
+
+        cursor.close()
+        return datos2
+
+    except Exception as err:
+        print(f"Error al obtener datos: {str(err)}")
+        return []
+
+
 # @login_required
 def mostrar_tabla():
-    datos = obtener_datos()
+    datos = obtener_datos_gestion()
     return render_template("/formGestion/gestion.html", datos=datos)

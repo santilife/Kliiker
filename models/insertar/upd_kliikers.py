@@ -21,6 +21,16 @@ def insertar_kliiker():
         # Actualizar en la base de datos
         cursor = mysql.connection.cursor()
         consulta = """
+            INSERT
+                id_llamada,
+                estado,
+                tipificacion,
+                canal,
+                fechaProximaGestion,
+                comentario
+            FROM gestiones
+            WHERE 
+                
         
         
         
