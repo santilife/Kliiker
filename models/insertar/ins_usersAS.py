@@ -48,8 +48,8 @@ def insertar():
             "nombre_AS": request.form["nombre"],
             "documento": documento,
             "usuario": request.form["usuario"],
-            "rol": request.form["rol"]
-            # "password": documento
+            "rol": request.form["rol"],
+            "password": documento
         }
 
         print("Datos procesados:", datos)
@@ -61,14 +61,16 @@ def insertar():
                     nombre_AS,
                     documento,
                     usuario,
-                    rol
-                ) VALUES (%s, %s, %s, %s)
+                    rol,
+                    password
+                ) VALUES (%s, %s, %s, %s, %s)
             """
             parametros = (
                 datos["nombre_AS"],
                 datos["documento"],
                 datos["usuario"],
-                datos["rol"]
+                datos["rol"],
+                datos["password"]
             )
 
             print("\nConsulta SQL:", cursor.mogrify(consulta, parametros))
