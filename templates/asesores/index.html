@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Hola {{session["usuario"]}}</h1>
+    <a href="{{url_for('auth.logout')}}">Cerrar sesión</a>
+  </body>
+</html>
+<form method="POST" action="">
+  <div class="modal-body">
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label">Nombre completo</label>
+        <input
+          type="text"
+          class="form-control"
+          name="nombre_AS"
+          required
+          pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ\s]{5,50}"
+          title="Solo letras y espacios (5-50 caracteres)"
+        />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Documento de identidad</label>
+        <input
+          type="number"
+          class="form-control"
+          name="documento"
+          required
+          min="1000000"
+          max="9999999999"
+          title="Número de documento válido (7-10 dígitos)"
+        />
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label">Usuario</label>
+        <input
+          type="text"
+          class="form-control"
+          name="usuario"
+          pattern="[A-Za-z0-9]{5,20}"
+          title="Solo letras y números (5-20 caracteres)"
+        />
+        <small class="form-text text-muted"
+          >Opcional. Si se deja vacío, se usará el documento</small
+        >
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Rol</label>
+        <select class="form-select" name="rol" required>
+          <option value="">Seleccione un rol</option>
+          <option value="administrador">Administrador</option>
+          <option value="asesor">Asesor</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+      Cerrar
+    </button>
+    <button type="submit" class="btn btn-primary">Guardar Asesor</button>
+  </div>
+</form>
