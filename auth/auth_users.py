@@ -9,7 +9,11 @@ from flask import (
     Blueprint,
     session,
     Response,
+    jsonify,
 )
+
+from datetime import datetime
+
 
 from models.mostrar.view_kliikers import mostrar_tabla
 
@@ -22,6 +26,10 @@ from werkzeug.security import check_password_hash
 # Importacion de los decorators
 from auth.decorators import login_required, role_required
 
+# Importacion momentanea
+from models.descargarDB.downloadDB import export_json
+
+
 # Inicialización de la aplicación Flask
 
 
@@ -33,8 +41,42 @@ asesores_generales = Blueprint("asesores_generales", __name__)
 auth = Blueprint("auth", __name__, template_folder="templates")
 
 
+@administradores.route("/admin/json")
+def json():
+    return export_json()
+    return mostrar_tabla()
+
+
+# graficas
+
+
+@administradores.route("/estadisticas")
+def ver_estadisticas():
+    return render_template("estadisticas/estadisticas.html")
+
+
+@administradores.route("/api/estadisticas/estados")
+def api_estados():
+    return jsonify(
+        {
+            # "data": data_manager.obtener_estados(),
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
+@administradores.route("/api/estadisticas/tipificaciones")
+def api_tipificaciones():
+    return jsonify(
+        {
+            # "data": data_manager.obtener_tipificaciones(),
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
 # Ruta para el panel de administradores
-@administradores.route("/admin")
+@administradores.route("/admin", methods=["GET", "POST"])
 @login_required  # Se aplica el decorador para login_required
 @role_required("Administrador")
 def admin():
