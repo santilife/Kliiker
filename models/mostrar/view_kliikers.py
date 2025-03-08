@@ -4,7 +4,6 @@ from datetime import datetime
 
 mostrar_tablas = Blueprint("mostrar_tablas", __name__)
 
-
 def obtener_datos_gestion():
     try:
         cursor = mysql.connection.cursor()
@@ -28,7 +27,8 @@ def obtener_datos_gestion():
                 g.comentario,
                 u.nombre_AS AS asesor,
                 t.tipificacion,
-                g.motivoNoInteres
+                g.motivoNoInteres,
+                g.tipificacion AS tipGestion
             FROM kliiker k
             LEFT JOIN gestiones g ON k.celular = g.celular
             LEFT JOIN usuarios u ON g.nombre_AS = u.nombre_AS
@@ -52,7 +52,53 @@ def obtener_datos_gestion():
         return []
 
 
+
+
+
+
+def obtener_datos_historial():
+    try:
+        cursor = mysql.connection.cursor()
+        
+        consulta = """
+            SELECT 
+                h.id_historial,
+                h.id_gestion,
+                h.id_llamada,
+                h.fecha,
+                h.canal,
+                h.tipoGestion,
+                h.comentario,
+                h.fechaProximaGestion,
+                h.nombre_AS as asesor,
+                h.tipificacion,
+                h.celular,
+                h.motivoNoInteres,
+                k.id_Kliiker AS idKliiker,
+                k.nombre,
+                k.apellido,
+                k.nivel,
+                e.estado
+            FROM historial_gestiones h
+            LEFT JOIN kliiker k ON h.celular = k.celular
+            LEFT JOIN estadokliiker e ON h.id_estado = e.id_estado
+            ORDER BY h.fecha DESC
+        """
+        cursor.execute(consulta)
+        datos_historial = cursor.fetchall()
+        return datos_historial
+        
+    except Exception as err:
+        print(f"Error en obtener_datos_historial: {str(err)}")
+        return []
+
+
 @mostrar_tablas.route("/mostrar_tablas")
 def mostrar_tabla():
-    datos = obtener_datos_gestion()
-    return render_template("/formGestion/gestion.html", datos=datos)
+    datos_gestion = obtener_datos_gestion()
+    datos_historial = obtener_datos_historial()
+    return render_template(
+        "/formGestion/gestion.html", 
+        datos=datos_gestion,
+        datos_historial=datos_historial
+    )

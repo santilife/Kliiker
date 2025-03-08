@@ -46,7 +46,6 @@ def json():
     return export_json()
     return mostrar_tabla()
 
-
 # graficas
 
 
