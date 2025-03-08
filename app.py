@@ -7,8 +7,11 @@ from flask_login import LoginManager
 # from auth.admin.administrador import admin_bp
 # from auth.asesor.asesor import asesor_bp
 
-from database.config import db_conexion, mysql
+from models.insertar.upd_kliikers import actualizar_gestion_modal
+from models.mostrar.view_kliikers import mostrar_tablas
+from database.config import db_conexion
 from auth.auth_users import administradores, asesores_generales, auth, iniciar_sesion
+from models.mostrar.view_usersAS import asesores_tables
 
 # from models.descargarDB.downloadDB import downloadDB
 
@@ -33,42 +36,13 @@ app.register_blueprint(asesores_generales)
 
 # app.register_blueprint(downloadDB)
 
+app.register_blueprint(mostrar_tablas)
+
+app.register_blueprint(actualizar_gestion_modal)
+
+app.register_blueprint(asesores_tables)
 
 # ---- GRAFICAS-----
-estados = ["Estado A", "Estado B", "Estado C"]
-frecuencia_estados = [50, 30, 20]
-
-tipificaciones = ["Tipificación X", "Tipificación Y", "Tipificación Z"]
-frecuencia_tipificaciones = [40, 35, 25]
-
-
-# # Ruta principal para mostrar la página de estadísticas
-@app.route("/estadisticas")
-def index():
-    # Pasar los datos a la plantilla estadisticas.html
-    return render_template(
-        "estadisticas/estadisticas.html",
-        estados=estados,
-        frecuencia_estados=frecuencia_estados,
-        tipificaciones=tipificaciones,
-        frecuencia_tipificaciones=frecuencia_tipificaciones,
-    )
-
-
-# Ruta para proporcionar datos en formato JSON
-@app.route("/estadisticas")
-def api_estadisticas():
-    datos_estadisticas = {
-        "estados": [
-            {"estado": e, "cantidad": f} for e, f in zip(estados, frecuencia_estados)
-        ],
-        "tipificaciones": [
-            {"tipificacion": t, "cantidad": f}
-            for t, f in zip(tipificaciones, frecuencia_tipificaciones)
-        ],
-    }
-    return jsonify(datos_estadisticas)
-
 
 if __name__ == "__main__":
     # Inicia el servidor en modo debug en el puerto 5000
