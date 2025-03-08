@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 05-03-2025 a las 22:27:20
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Mar 08, 2025 at 04:24 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,33 +18,46 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `kliiker1`
+-- Database: `kliiker1`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `estado`
+-- Table structure for table `estadokliiker`
 --
 
-CREATE TABLE `estado` (
+CREATE TABLE `estadokliiker` (
   `id_estado` int(11) NOT NULL,
   `estado` varchar(250) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `estado`
+-- Dumping data for table `estadokliiker`
 --
 
-INSERT INTO `estado` (`id_estado`, `estado`) VALUES
-(1, 'Activo'),
-(2, 'Inactivo'),
-(3, 'Pendiente');
+INSERT INTO `estadokliiker` (`id_estado`, `estado`) VALUES
+(1, 'Dia_1'),
+(2, 'Dia_2'),
+(3, 'Dia_3');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `gestiones`
+-- Table structure for table `flujotrabajo`
+--
+
+CREATE TABLE `flujotrabajo` (
+  `id_flujoTrabajo` int(11) NOT NULL,
+  `nivel` tinyint(1) NOT NULL,
+  `id_estado` int(11) NOT NULL,
+  `diasParaGestion` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gestiones`
 --
 
 CREATE TABLE `gestiones` (
@@ -57,22 +70,78 @@ CREATE TABLE `gestiones` (
   `fechaProximaGestion` date DEFAULT NULL,
   `nombre_AS` varchar(250) DEFAULT NULL,
   `tipificacion` varchar(250) DEFAULT NULL,
-  `subTipificacion` varchar(250) DEFAULT NULL,
+  `motivoNoInteres` varchar(250) DEFAULT NULL,
+  `id_estado` int(11) NOT NULL,
   `celular` varchar(250) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `gestiones`
+-- Dumping data for table `gestiones`
 --
 
-INSERT INTO `gestiones` (`id_gestion`, `id_llamada`, `fecha`, `canal`, `tipoGestion`, `comentario`, `fechaProximaGestion`, `nombre_AS`, `tipificacion`, `subTipificacion`, `celular`) VALUES
-(1, 1001, '2024-03-05', 'Telefónico', 'Seguimiento', 'Cliente interesado en el producto', '2024-03-10', 'operador1', 'Llamada efectiva', 'Cierre de venta', '3001234567'),
-(2, 1002, '2024-03-04', 'WhatsApp', 'Información', 'Cliente pidió detalles', '2024-03-08', 'operador1', 'Volver a llamar', 'Interesado', '3017654321');
+INSERT INTO `gestiones` (`id_gestion`, `id_llamada`, `fecha`, `canal`, `tipoGestion`, `comentario`, `fechaProximaGestion`, `nombre_AS`, `tipificacion`, `motivoNoInteres`, `id_estado`, `celular`) VALUES
+(1, 1001, '2024-03-05', 'Telefónico', 'Seguimiento', 'Cliente interesado en el producto', '2024-03-10', 'operador1', 'Llamada efectiva', '', 0, '3001234567'),
+(2, 1002, '2024-03-04', 'WhatsApp', 'Información', 'Cliente pidió detalles', '2024-03-08', 'operador1', 'Volver a llamar', '', 0, '3017654321');
+
+--
+-- Triggers `gestiones`
+--
+DELIMITER $$
+CREATE TRIGGER `after_gestion_update` AFTER UPDATE ON `gestiones` FOR EACH ROW BEGIN
+    INSERT INTO historial_gestiones (
+        id_gestion,
+        id_llamada,
+        fecha,
+        canal,
+        tipoGestion,
+        comentario,
+        fechaProximaGestion,
+        nombre_AS,
+        tipificacion,
+        subTipificacion,
+        celular
+    ) VALUES (
+        NEW.id_gestion,
+        NEW.id_llamada,
+        NEW.fecha,
+        NEW.canal,
+        NEW.tipoGestion,
+        NEW.comentario,
+        NEW.fechaProximaGestion,
+        NEW.nombre_AS,
+        NEW.tipificacion,
+        NEW.subTipificacion,
+        NEW.celular
+    );
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `kliiker`
+-- Table structure for table `historial_gestiones`
+--
+
+CREATE TABLE `historial_gestiones` (
+  `id_historial` int(11) NOT NULL,
+  `id_gestion` int(11) NOT NULL,
+  `id_llamada` int(11) DEFAULT NULL,
+  `fecha` date DEFAULT NULL,
+  `canal` varchar(250) DEFAULT NULL,
+  `tipoGestion` varchar(250) DEFAULT NULL,
+  `comentario` varchar(250) DEFAULT NULL,
+  `fechaProximaGestion` date DEFAULT NULL,
+  `nombre_AS` varchar(250) DEFAULT NULL,
+  `tipificacion` varchar(250) DEFAULT NULL,
+  `celular` varchar(250) DEFAULT NULL,
+  `motivoNoInteres` varchar(250) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `kliiker`
 --
 
 CREATE TABLE `kliiker` (
@@ -88,21 +157,21 @@ CREATE TABLE `kliiker` (
   `diaSinGestion` int(11) DEFAULT NULL,
   `gestionable` tinyint(1) DEFAULT NULL,
   `id_estado` int(11) DEFAULT NULL,
-  `motivo_no_int` varchar(250) NOT NULL
+  `fechaSinGestion` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `kliiker`
+-- Dumping data for table `kliiker`
 --
 
-INSERT INTO `kliiker` (`id_Kliiker`, `nombre`, `apellido`, `celular`, `nivel`, `correo`, `fecha`, `venta`, `fechaIngreso`, `diaSinGestion`, `gestionable`, `id_estado`, `motivo_no_int`) VALUES
-('K001', 'Juan', 'Pérez', '3001234567', 1, 'juan.perez@mail.com', '2024-03-01', 0, '2024-03-05', 2, 1, 1, ''),
-('K002', 'María', 'González', '3017654321', 0, 'maria.gonzalez@mail.com', '2024-02-20', 1, '2024-02-25', 5, 0, 2, '');
+INSERT INTO `kliiker` (`id_Kliiker`, `nombre`, `apellido`, `celular`, `nivel`, `correo`, `fecha`, `venta`, `fechaIngreso`, `diaSinGestion`, `gestionable`, `id_estado`, `fechaSinGestion`) VALUES
+('K001', 'Juan', 'Pérez', '3001234567', 1, 'juan.perez@mail.com', '2024-03-01', 0, '2024-03-05', 2, 1, 1, NULL),
+('K002', 'María', 'González', '3017654321', 0, 'maria.gonzalez@mail.com', '2024-02-20', 1, '2024-02-25', 5, 0, 2, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipificacion`
+-- Table structure for table `tipificacion`
 --
 
 CREATE TABLE `tipificacion` (
@@ -115,7 +184,7 @@ CREATE TABLE `tipificacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `tipificacion`
+-- Dumping data for table `tipificacion`
 --
 
 INSERT INTO `tipificacion` (`id_tipificacion`, `id_estado`, `tipificacion`, `rpc`, `Contactabilidad`, `Cierre_flujo`) VALUES
@@ -126,7 +195,7 @@ INSERT INTO `tipificacion` (`id_tipificacion`, `id_estado`, `tipificacion`, `rpc
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `usuarios`
+-- Table structure for table `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -139,7 +208,7 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `usuarios`
+-- Dumping data for table `usuarios`
 --
 
 INSERT INTO `usuarios` (`nombre_AS`, `documento`, `password`, `usuario`, `rol`, `estadoUsuario`) VALUES
@@ -148,17 +217,17 @@ INSERT INTO `usuarios` (`nombre_AS`, `documento`, `password`, `usuario`, `rol`, 
 ('Valentina', 1036252267, '1234567890', 'Valen1', 'Administrador', 1);
 
 --
--- Índices para tablas volcadas
+-- Indexes for dumped tables
 --
 
 --
--- Indices de la tabla `estado`
+-- Indexes for table `estadokliiker`
 --
-ALTER TABLE `estado`
+ALTER TABLE `estadokliiker`
   ADD PRIMARY KEY (`id_estado`);
 
 --
--- Indices de la tabla `gestiones`
+-- Indexes for table `gestiones`
 --
 ALTER TABLE `gestiones`
   ADD PRIMARY KEY (`id_gestion`),
@@ -167,7 +236,14 @@ ALTER TABLE `gestiones`
   ADD KEY `celular` (`celular`);
 
 --
--- Indices de la tabla `kliiker`
+-- Indexes for table `historial_gestiones`
+--
+ALTER TABLE `historial_gestiones`
+  ADD PRIMARY KEY (`id_historial`),
+  ADD KEY `id_gestion` (`id_gestion`);
+
+--
+-- Indexes for table `kliiker`
 --
 ALTER TABLE `kliiker`
   ADD PRIMARY KEY (`celular`),
@@ -176,14 +252,14 @@ ALTER TABLE `kliiker`
   ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indices de la tabla `tipificacion`
+-- Indexes for table `tipificacion`
 --
 ALTER TABLE `tipificacion`
   ADD PRIMARY KEY (`id_tipificacion`),
   ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indices de la tabla `usuarios`
+-- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`nombre_AS`),
@@ -191,27 +267,49 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `usuario` (`usuario`);
 
 --
--- Restricciones para tablas volcadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- Filtros para la tabla `gestiones`
+-- AUTO_INCREMENT for table `gestiones`
+--
+ALTER TABLE `gestiones`
+  MODIFY `id_gestion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT for table `historial_gestiones`
+--
+ALTER TABLE `historial_gestiones`
+  MODIFY `id_historial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `gestiones`
 --
 ALTER TABLE `gestiones`
   ADD CONSTRAINT `gestiones_ibfk_1` FOREIGN KEY (`nombre_AS`) REFERENCES `usuarios` (`nombre_AS`),
   ADD CONSTRAINT `gestiones_ibfk_2` FOREIGN KEY (`celular`) REFERENCES `kliiker` (`celular`);
 
 --
--- Filtros para la tabla `kliiker`
+-- Constraints for table `historial_gestiones`
 --
-ALTER TABLE `kliiker`
-  ADD CONSTRAINT `kliiker_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+ALTER TABLE `historial_gestiones`
+  ADD CONSTRAINT `historial_gestiones_ibfk_1` FOREIGN KEY (`id_gestion`) REFERENCES `gestiones` (`id_gestion`);
 
 --
--- Filtros para la tabla `tipificacion`
+-- Constraints for table `kliiker`
+--
+ALTER TABLE `kliiker`
+  ADD CONSTRAINT `kliiker_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estadokliiker` (`id_estado`);
+
+--
+-- Constraints for table `tipificacion`
 --
 ALTER TABLE `tipificacion`
-  ADD CONSTRAINT `tipificacion_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `tipificacion_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estadokliiker` (`id_estado`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
