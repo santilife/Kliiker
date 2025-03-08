@@ -1,82 +1,88 @@
-from flask import Flask
+from flask import Flask, render_template
+import matplotlib
+
+matplotlib.use("Agg")  # Fuerza el uso de un backend sin interfaz gráfica
 import matplotlib.pyplot as plt
 from database.config import db_conexion, mysql  # Importa la conexión desde config.py
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
-db_conexion(app)  # Llama a la función de configuración para inicializar MySQL
+db_conexion(app)  # Inicializa la conexión con MySQL
 
 
-def obtener_datos():
-    """
-    Obtiene los datos de Estado y Tipificación desde la base de datos.
-    """
-    conexion = mysql.connection
-    cursor = conexion.cursor()
+class GeneradorGraficas:
+    def __init__(self, mysql):
+        self.mysql = mysql
 
-    # 🔹 Obtener datos de Estados
-    cursor.execute(
-        """
-        SELECT estado, COUNT(*) 
-        FROM kliiker 
-        INNER JOIN estado ON kliker.id_estado = estado.id_estado 
-        GROUP BY estado
-    """
+    def _ejecutar_consulta(self, query):
+        """Ejecuta una consulta SQL y devuelve los resultados."""
+        cursor = self.mysql.connection.cursor(dictionary=True)
+        try:
+            cursor.execute(query)
+            resultados = cursor.fetchall()
+            print("🔹 Datos obtenidos en Flask:", resultados)  # Depuración
+            return resultados
+        except Exception as e:
+            print(f"❌ Error al ejecutar la consulta: {str(e)}")
+            return None
+        finally:
+            cursor.close()
+
+    def grafico_estados(self):
+        """Genera un gráfico de pastel con la distribución de estados."""
+        try:
+            query = """
+                SELECT e.estado, COUNT(k.id_Kliiker) AS cantidad 
+                FROM estadoKliiker e
+                LEFT JOIN kliiker k ON e.id_estado = k.id_estado
+                GROUP BY e.estado
+            """
+            datos = self._ejecutar_consulta(query)
+
+            if not datos or len(datos) == 0:
+                print("⚠️ No se obtuvieron datos de la base de datos.")
+                return None
+
+            labels = [item["estado"] for item in datos]
+            sizes = [item["cantidad"] for item in datos]
+
+            plt.figure(figsize=(8, 8))
+            plt.pie(
+                sizes,
+                labels=labels,
+                autopct="%1.1f%%",
+                wedgeprops=dict(width=0.3),
+                startangle=90,
+            )
+            plt.title("Distribución de Estados")
+
+            return self._guardar_grafico()
+        except Exception as e:
+            print(f"❌ Error en gráfico de estados: {str(e)}")
+            return None
+
+    def _guardar_grafico(self):
+        """Convierte la imagen generada en un string base64 para ser enviada en una respuesta HTML."""
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png", bbox_inches="tight")
+        buffer.seek(0)
+        imagen = base64.b64encode(buffer.getvalue()).decode()
+        plt.close()
+        return f"data:image/png;base64,{imagen}"
+
+
+generador_graficas = GeneradorGraficas(mysql)
+
+
+@app.route("/")
+def index():
+    """Ruta principal que renderiza la página con las gráficas."""
+    grafico_estados = generador_graficas.grafico_estados()
+    return render_template(
+        "estadisticas/estadisticas.html", grafico_estados=grafico_estados
     )
-    datos_estados = cursor.fetchall()
-
-    # 🔹 Obtener datos de Tipificación
-    cursor.execute(
-        """
-        SELECT tipificacion, COUNT(*) 
-        FROM gestiones 
-        GROUP BY tipificacion
-    """
-    )
-    datos_tipificacion = cursor.fetchall()
-
-    cursor.close()
-    return datos_estados, datos_tipificacion
-
-
-def graficar():
-    """
-    Genera las gráficas de Estados (dona) y Tipificación (barras horizontales).
-    """
-    datos_estados, datos_tipificacion = obtener_datos()
-
-    # 🔹 Procesar datos para la gráfica de dona
-    labels_estados = [fila[0] for fila in datos_estados]
-    valores_estados = [fila[1] for fila in datos_estados]
-
-    # 🔹 Crear el diagrama de dona
-    plt.figure(figsize=(6, 6))
-    plt.pie(
-        valores_estados,
-        labels=labels_estados,
-        autopct="%1.1f%%",
-        startangle=140,
-        wedgeprops={"edgecolor": "white"},
-    )
-    plt.gca().add_artist(
-        plt.Circle((0, 0), 0.6, color="white")
-    )  # Agregar efecto de dona
-    plt.title("Distribución de Estados")
-    plt.show()
-
-    # 🔹 Procesar datos para la gráfica de barras
-    labels_tipificacion = [fila[0] for fila in datos_tipificacion]
-    valores_tipificacion = [fila[1] for fila in datos_tipificacion]
-
-    # 🔹 Crear la gráfica de barras horizontal
-    plt.figure(figsize=(8, 5))
-    plt.barh(labels_tipificacion, valores_tipificacion, color=["blue", "red", "green"])
-    plt.xlabel("Cantidad de Gestiones")
-    plt.ylabel("Tipificación")
-    plt.title("Cantidad de Gestiones por Tipificación")
-    plt.grid(axis="x", linestyle="--", alpha=0.7)
-    plt.show()
 
 
 if __name__ == "__main__":
-    with app.app_context():
-        graficar()
+    app.run(debug=True)
