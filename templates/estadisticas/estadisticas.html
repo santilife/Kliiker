@@ -1,62 +1,131 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Estadísticas</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body>
-    <h2>Distribución de Estados</h2>
-    <canvas id="chartEstados"></canvas>
-
-    <h2>Cantidad de Gestiones por Tipificación</h2>
-    <canvas id="chartTipificaciones"></canvas>
-
-    <script>
-      async function cargarDatos() {
-        const response = await fetch("/api/estadisticas");
-        const data = await response.json();
-
-        // 🔹 Configurar gráfico de dona para estados
-        const estadosCtx = document
-          .getElementById("chartEstados")
-          .getContext("2d");
-        new Chart(estadosCtx, {
-          type: "doughnut",
-          data: {
-            labels: data.estados.map((e) => e.estado),
-            datasets: [
-              {
-                data: data.estados.map((e) => e.cantidad),
-                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-              },
-            ],
-          },
-        });
-
-        // 🔹 Configurar gráfico de barras horizontales para tipificaciones
-        const tipCtx = document
-          .getElementById("chartTipificaciones")
-          .getContext("2d");
-        new Chart(tipCtx, {
-          type: "bar",
-          data: {
-            labels: data.tipificaciones.map((t) => t.tipificacion),
-            datasets: [
-              {
-                data: data.tipificaciones.map((t) => t.cantidad),
-                backgroundColor: "blue",
-              },
-            ],
-          },
-          options: {
-            indexAxis: "y",
-          },
-        });
+    <title>Datos Estadísticos</title>
+    <style>
+      .contenedor {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
       }
 
-      cargarDatos();
+      .tarjeta {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 20px 0;
+        padding: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f8f9fa;
+      }
+
+      .actualizacion {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="contenedor">
+      <!-- Tarjeta para Estados -->
+      <div class="tarjeta">
+        <h2>Estadísticas de Estados</h2>
+        <table id="tabla-estados">
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Porcentaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Datos se insertarán aquí -->
+          </tbody>
+        </table>
+        <div class="actualizacion" id="actualizacion-estados"></div>
+      </div>
+
+      <!-- Tarjeta para Tipificaciones -->
+      <div class="tarjeta">
+        <h2>Estadísticas de Tipificaciones</h2>
+        <table id="tabla-tipificaciones">
+          <thead>
+            <tr>
+              <th>Tipificación</th>
+              <th>Total</th>
+              <th>Porcentaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Datos se insertarán aquí -->
+          </tbody>
+        </table>
+        <div class="actualizacion" id="actualizacion-tipificaciones"></div>
+      </div>
+    </div>
+
+    <script>
+      function actualizarDatos(url, tablaId, actualizacionId) {
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            const tbody = document.querySelector(`#${tablaId} tbody`);
+            tbody.innerHTML = "";
+
+            data.data.forEach((item) => {
+              const row = `
+                            <tr>
+                                <td>${item.nombre}</td>
+                                <td>${item.total}</td>
+                                <td>${item.porcentaje}%</td>
+                            </tr>
+                        `;
+              tbody.innerHTML += row;
+            });
+
+            document.getElementById(
+              actualizacionId
+            ).textContent = `Última actualización: ${new Date(
+              data.timestamp
+            ).toLocaleString()}`;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function actualizarTodo() {
+        actualizarDatos(
+          "/api/estadisticas/estados",
+          "tabla-estados",
+          "actualizacion-estados"
+        );
+
+        actualizarDatos(
+          "/api/estadisticas/tipificaciones",
+          "tabla-tipificaciones",
+          "actualizacion-tipificaciones"
+        );
+      }
+
+      // Actualizar cada 10 segundos
+      setInterval(actualizarTodo, 10000);
+      window.onload = actualizarTodo;
     </script>
   </body>
 </html>
