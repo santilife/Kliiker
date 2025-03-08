@@ -2,16 +2,19 @@ from flask import render_template, Blueprint, Flask, flash, request, redirect, u
 from database.config import mysql
 from datetime import datetime
 
+# Blueprint para mostrar las tablas de gestión
 mostrar_tablas = Blueprint("mostrar_tablas", __name__)
 
 def obtener_datos_gestion():
     try:
         cursor = mysql.connection.cursor()
 
+        # Verifica si existe la tabla kliiker
         cursor.execute("SHOW TABLES LIKE 'kliiker'")
         if not cursor.fetchone():
             raise Exception("Tabla 'kliiker' no existe")
 
+        # Consulta principal que une las tablas kliiker, gestiones, usuarios, tipificacion y estadoKliiker
         consulta = """
             SELECT
                 g.id_gestion AS idGestion,
@@ -19,7 +22,7 @@ def obtener_datos_gestion():
                 k.nombre,
                 k.apellido,
                 k.celular,
-                k.nivel AS codigo,  -- Cambiado alias conflictivo
+                k.nivel AS codigo,
                 e.estado,
                 g.canal,
                 g.tipoGestion,
@@ -33,7 +36,7 @@ def obtener_datos_gestion():
             LEFT JOIN gestiones g ON k.celular = g.celular
             LEFT JOIN usuarios u ON g.nombre_AS = u.nombre_AS
             LEFT JOIN tipificacion t ON g.tipificacion = t.tipificacion
-            LEFT JOIN estadoKliiker e ON k.id_estado = e.id_estado  -- JOIN corregido
+            LEFT JOIN estadoKliiker e ON k.id_estado = e.id_estado
             ORDER BY g.fecha DESC
         """
         cursor.execute(consulta)
@@ -41,25 +44,18 @@ def obtener_datos_gestion():
         column_names = [column[0] for column in cursor.description]
         datos = cursor.fetchall()
         print(datos)
-        # Convertir a diccionarios (HABILITAR)
-        # resultados = [dict(zip(column_names, row)) for row in datos]
-
         cursor.close()
-        # return resultados
         return datos
     except Exception as err:
         print(f"Error en obtener_datos_gestion: {str(err)}")
         return []
 
 
-
-
-
-
 def obtener_datos_historial():
     try:
         cursor = mysql.connection.cursor()
         
+        # Consulta para obtener el historial de gestiones con información relacionada
         consulta = """
             SELECT 
                 h.id_historial,
@@ -93,6 +89,7 @@ def obtener_datos_historial():
         return []
 
 
+# Ruta para mostrar las tablas de gestión y historial
 @mostrar_tablas.route("/mostrar_tablas")
 def mostrar_tabla():
     datos_gestion = obtener_datos_gestion()

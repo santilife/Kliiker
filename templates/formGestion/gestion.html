@@ -57,6 +57,7 @@
     </style>
   </head>
   <body>
+    {% if session["rol"] == "Administrador" %}
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
       <div class="container-fluid">
         <img
@@ -67,7 +68,7 @@
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" href="#">Gestión</a>
+              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/estadisticas/estadisticas.html"
@@ -78,9 +79,31 @@
               <a class="nav-link" href="#">Administrativo</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('asesores_tables.index')}}"
+              <a class="nav-link" href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}"
                 >Asesor</a
               >
+            </li>
+          </ul>
+          <span class="navbar-text me-3">Hola {{session["usuario"]}} ({{session["rol"]}})</span>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
+            >Cerrar sesión</a
+          >
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+    {% if session["rol"] == "Asesor" %}
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+      <div class="container-fluid">
+        <img
+          src="../../static/img/LogoKliiker.png"
+          class="logo-header me-3"
+          alt="Logo Kliiker"
+        />
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
             </li>
           </ul>
           <span class="navbar-text me-3">Hola {{session["usuario"]}}</span>
@@ -90,7 +113,7 @@
         </div>
       </div>
     </nav>
-
+    {% endif %}
     <div class="container mt-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="search-container">
@@ -171,42 +194,33 @@
         <table class="table table-hover tabla-datos">
             <thead class="table-light">
                 <tr>
-                    <th>Id Llamada</th>
-                    <th>Id Gestion</th>
                     <th>Id Kliiker</th>
                     <th>Nombre</th>
                     <th>Apellido</th>
                     <th>Celular</th>
                     <th>Nivel</th>
-                    <th>Motivo no interés</th>
-                    
                     <th>Fecha</th>
                     <th>Canal</th>
                     <th>Tipificación</th>
                     <th>Estado</th>
                     <th>Comentario</th>
-                    <th>Próxima gestión</th>
                     <th>Asesor</th>
                 </tr>
             </thead>
             <tbody>
                 {% for historial in datos_historial %}
                 <tr>
-                    <td>{{ historial.id_llamada }}</td>
-                    <td>{{ historial.id_gestion }}</td>
                     <td>{{ historial.idKliiker }}</td>
                     <td>{{ historial.nombre }}</td>
                     <td>{{ historial.apellido }}</td>
                     <td>{{ historial.celular }}</td>
                     <td>{{ historial.nivel }}</td>
-                    <td>{{ historial.motivoNoInteres }}</td>
                     <td>{{ historial.fecha }}</td>
                     <td>{{ historial.canal }}</td>
                     <td>{{ historial.tipificacion }}</td>
                     <td>{{ historial.id_estado }}</td>
                     <td>{{ historial.comentario }}</td>
-                    <td>{{ historial.fechaProximaGestion }}</td>
-                    <td>{{ historial.nombre_AS }}</td>
+                    <td>{{ historial.asesor }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
