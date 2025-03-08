@@ -49,6 +49,7 @@
   </head>
   <body>
     <!-- Barra de navegación -->
+     
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
       <div class="container-fluid">
         <img
@@ -60,15 +61,16 @@
         <div class="collapse navbar-collapse">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="#">Estadísticas</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link active" href="#">Gestión</a>
             </li>
+              <li class="nav-item">
+              <a class="nav-link" href="/estadisticas/estadisticas.html">Estadísticas</a>
+            </li>
+          
             <li class="nav-item">
               <a class="nav-link" href="#">Administrativo</a>
             </li>
-            <li class="nav-item"><a class="nav-link" href="#">Asesor</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{url_for('asesores_tables.index')}}">Asesor</a></li>
           </ul>
           <span class="navbar-text me-3">Hola {{session["usuario"]}}</span>
           <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger"
@@ -82,7 +84,7 @@
     <div class="container mt-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="search-container">
-          <input type="search" class="form-control" placeholder="Buscar..." />
+          <input type="search" id="searchInput" class="form-control" placeholder="Buscar..." />
         </div>
         <img
           src="../../static/img/LogoAndes.png"
@@ -95,15 +97,14 @@
       <div class="tabs">
         <button class="tab active" onclick="mostrarTabla('gestion')">Gestión</button>
         <button class="tab" onclick="mostrarTabla('historial')">Historial</button>
-    </div>
+      </div>
       <!-- ----------------------------------------------------------------------- -->
       <!--                              Tabla Gestion                              -->
       <!-- ----------------------------------------------------------------------- -->
       <div class="table-responsive" id="gestionTable">
-        <table class="table table-hover tabla-datos" >
+        <table class="table table-hover tabla-datos" id="gestionTableBuscar">
           <thead class="table-light">
             <tr>
-              
               <th>Nombre</th>
               <th>Apellido</th>
               <th>Celular</th>
@@ -121,10 +122,12 @@
                 class="btn btn-link btn-tab text-decoration-none"
                 data-bs-toggle="modal"
                 data-bs-target="#detalleModal"
-                data-id="{{ fila.id_Kliiker }}"
+                data-idgestion="{{ fila.idGestion }}"
+                data-estado="{{ fila.estado }}"
                 data-nombre="{{ fila.nombre }}"
                 data-apellido="{{ fila.apellido }}"
                 data-celular="{{ fila.celular }}"
+                data-motivoNoInt="{{ fila.motivoNoInteres }}"
                 >
                 {{ fila.nombre }}
                 </button>
@@ -134,7 +137,7 @@
               <td>{{ 'Sí' if fila.nivel else 'No'}}</td>
               <td>{{ fila.idKliiker }}</td>
               <td>{{ fila.tipificacion }}</td>
-              <!-- <td>{{ fila.cantidad_gestiones }}</td> -->
+              <td>{{ fila.cantidad_gestiones }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -155,9 +158,9 @@
               data-bs-dismiss="modal"
             ></button>
           </div>
-          <form method="POST" action="">
+          <form method="POST" action="{{ url_for('actualizar_gestion_modal.actualizar_gestion')}}">
             <div class="modal-body">
-              <input type="hidden" name="id_kliiker" id="modalId" />
+              <input type="hidden" name="id_gestion" id="modalIdGestion">
 
               <div class="row g-3 mb-4">
                 <div class="col-md-6">
@@ -172,14 +175,14 @@
 
                 <div class="col-md-6">
                 <label class="form-label">Estado</label>
-                  <select class="form-select" name="estado">
-                    <option value="Consiguio trabajo">Seleccione</option>
-                    <option value="Nuevos">Nuevos</option>
+                  <select class="form-select" name="estado" required>
+                    <option value="">Seleccione</option>
+                    <!-- <option value="Nuevos">Nuevos</option> -->
                     <option value="Llamada1">Llamada 1</option>
                     <option value="Llamada2">Llamada 2</option>
                     <option value="Llamada3">Llamada 3</option>
                     <option value="Llamada4">Llamada 4</option>
-                    <option value="Descartados">Descartados</option>
+                    <!-- <option value="Descartados">Descartados</option> -->
                   </select>
                 </div>
               </div>
@@ -187,8 +190,8 @@
               <div class="row g-3 mb-4">
                 <div class="col-md-6">
                   <label class="form-label">Tipificación</label>
-                  <select class="form-select" name="tipificacion">
-                    <option value="Consiguio trabajo">Seleccione</option>
+                  <select class="form-select" name="tipificacion" required>
+                    <option value="">Seleccione</option>
                     <option value="No contesta">No contesta</option>
                     <option value="Buzón de voz">Buzón de voz</option>
                     <option value="Información general">
@@ -200,39 +203,49 @@
                   </select>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-5">
                   <label class="form-label">Canal</label>
-                  <select class="form-select" name="canal">
-                    <option value="Consiguio trabajo">Seleccione</option>
+                  <select class="form-select" name="canal" required>
+                    <option value="">Seleccione</option>
                     <option value="Whatsapp">Whatsapp</option>
                     <option value="Via telefonica">Vía telefónica</option>
                   </select>
                 </div>
               </div>
+              <div class="col-md-6">
+                <label class="form-label">Tipo gestión</label>
+                <select class="form-select" name="tipoGestion" required>
+                  <option value="">Seleccione</option>
+                  <option value="Whatsapp">Entrada</option>
+                  <option value="Via telefonica">Salida</option>
+                </select>
+              </div>
+            </div>
 
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label">Motivo no interés</label>
-                  <select class="form-select" name="motivo_no_interes">
-                    <option value="Consiguio trabajo">Seleccione</option>
-                    <option value="Consiguio trabajo">Consiguió trabajo</option>
-                    <option value="Precio alto">Precio alto</option>
-                    <option value="Confusión oferta de empleo">
-                      Confusión oferta de empleo
-                    </option>
-                    <option value="Pensaba que era diferente">
-                      Pensaba que era diferente
-                    </option>
-                    <option value="Estafa">Estafa</option>
-                  </select>
-                </div>
+                <div class="row g-3 mb-4" data-motivo-container style="display: none;">
+                  <div class="col-md-7">
+                      <label class="form-label">Motivo no interés</label>
+                      <select class="form-select" name="motivo_no_interes">
+                          <option value="">Seleccione</option>
+                          <option value="Consiguio trabajo">Consiguió trabajo</option>
+                          <option value="Precio alto">Precio alto</option>
+                          <option value="Confusión oferta de empleo">
+                              Confusión oferta de empleo
+                          </option>
+                          <option value="Pensaba que era diferente">
+                              Pensaba que era diferente
+                          </option>
+                          <option value="Estafa">Estafa</option>
+                      </select>
+                  </div>
+              </div>
 
                 <div class="col-md-6">
                   <label class="form-label">Fecha próxima llamada</label>
                   <input
                     type="date"
                     class="form-control"
-                    name="fecha_proxima"
+                    name="fecha_proxima_gestion"
                   />
                 </div>
               </div>
@@ -269,7 +282,7 @@
     <!-- ----------------------------------------------------------------------- -->
     <div class="table-responsive" id="historialTable">
       <!-- En tu archivo gestion.html -->
-    <table class="table table-hover tabla-datos" >
+    <table class="table table-hover tabla-datos" id="historiaTableBuscar" >
       <thead class="table-light">
               <tr>
                   <th>Nombre</th>
@@ -281,7 +294,7 @@
                   <th>Tipificación</th>
                   <th>Estado</th>
                   <th>Canal</th>
-                  <th>Tipo gestor</th>
+                  <th>Tipo gestion</th>
                   <th>Comentario</th>
                   <th>Asesor</th>
               </tr>
@@ -298,7 +311,7 @@
                   <td>{{ fila.tipificacion }}</td>
                   <td>{{ fila.estado }}</td>
                   <td>{{ fila.canal }}</td>
-                  <td>{{ fila.tipoGestor }}</td>
+                  <td>{{ fila.tipoGestion }}</td>
                   <td>{{ fila.comentario }}</td>
                   <td>{{ fila.asesor }}</td>
               </tr>
@@ -309,22 +322,39 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Script para manejar los datos del modal
-      document
-        .getElementById("detalleModal")
-        .addEventListener("show.bs.modal", function (event) {
-          const button = event.relatedTarget;
-          const modal = this;
+      // Script para manejar los datos del modal - Versión Mejorada
+document.getElementById("detalleModal").addEventListener("show.bs.modal", function(event) {
+    const button = event.relatedTarget;
+    const modal = this;
+    
+    // Mapeo completo de datos
+    const fieldMappings = {
+        '#modalIdGestion': 'idgestion',
+        'input[name="id_llamada"]': 'idllamada',
+        'select[name="estado"]': 'estado',
+        'select[name="tipificacion"]': 'tipificacion',
+        'select[name="canal"]': 'canal',
+        'select[name="motivo_no_interes"]': 'motivo',
+        'input[name="fecha_proxima_gestion"]': 'fechaproxima',
+        'input[name="Descripcion"]': 'descripcion'
+    };
 
-          modal.querySelector("#modalId").value = button.dataset.id;
-          modal.querySelector('input[name="nombre"]').value =
-            button.dataset.nombre;
-          modal.querySelector('input[name="apellido"]').value =
-            button.dataset.apellido;
-          modal.querySelector('input[name="celular"]').value =
-            button.dataset.celular;
-        });
-
+    // Poblar todos los campos
+    Object.entries(fieldMappings).forEach(([selector, dataField]) => {
+        const element = modal.querySelector(selector);
+        const value = button.dataset[dataField];
+        
+        if (element) {
+            if (element.tagName === 'SELECT') {
+                Array.from(element.options).forEach(option => {
+                    option.selected = option.value === value;
+                });
+            } else {
+                element.value = value || '';
+            }
+        } 
+    });
+});
         /*Función para las tablas gestión y historial*/
         function mostrarTabla(tipo) {
         const gestionTab = document.querySelector('.tab:nth-child(1)');
@@ -344,6 +374,100 @@
             gestionTable.style.display = 'none';
         }
     }
-    </script>
+
+// ------------------------------------------------------------------------------------
+    // Buscar
+    document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM cargado"); // Verifica que el DOM esté listo
+
+    const input = document.getElementById("searchInput");
+    const gestionTable = document.getElementById("gestionTable");
+    const historialTable = document.getElementById("historialTable");
+
+    console.log("Campo de búsqueda:", input); // Verifica si el campo de búsqueda se encuentra
+    console.log("Tablas:", gestionTable, historialTable); // Verifica si las tablas se encuentran
+
+    if (!input || !gestionTable || !historialTable) {
+        console.error("No se encontraron los elementos necesarios.");
+        return;
+    }
+
+    // Función para normalizar texto (eliminar tildes y convertir a mayúsculas)
+    function normalizarTexto(texto) {
+        return texto
+            .normalize("NFD") // Normaliza el texto a su forma descompuesta (NFD)
+            .replace(/[\u0300-\u036f]/g, "") // Elimina los diacríticos (tildes)
+            .toUpperCase(); // Convierte el texto a mayúsculas
+    }
+
+    // Función para buscar en una tabla específica
+    function buscarEnTabla(table, filter) {
+        const rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) { // Comienza desde 1 para omitir la cabecera
+            const row = rows[i];
+            const cells = row.getElementsByTagName("td");
+            let mostrarFila = false;
+
+            // Recorre todas las celdas de la fila
+            for (let j = 0; j < cells.length; j++) {
+                const cell = cells[j];
+                if (cell) {
+                    const text = cell.textContent || cell.innerText;
+                    const textoNormalizado = normalizarTexto(text);
+                    const filtroNormalizado = normalizarTexto(filter);
+
+                    if (textoNormalizado.includes(filtroNormalizado)) {
+                        mostrarFila = true;
+                        break; // Si alguna celda coincide, mostrar la fila
+                    }
+                }
+            }
+
+            // Muestra u oculta la fila según si coincide con la búsqueda
+            if (mostrarFila) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+
+    // Función principal para buscar en ambas tablas
+    function buscarEnAmbasTablas() {
+        const filter = input.value;
+
+        // Buscar en la tabla de gestión
+        buscarEnTabla(gestionTable, filter);
+
+        // Buscar en la tabla de historial
+        buscarEnTabla(historialTable, filter);
+    }
+
+    // Escuchar el evento "input" en el campo de búsqueda
+    input.addEventListener("input", buscarEnAmbasTablas);
+});
+// --------------------------------------------------------------------------------------
+   // Control de visibilidad del motivo de no interés
+   document.getElementById('detalleModal').addEventListener('show.bs.modal', function() {
+        const tipificacionSelect = this.querySelector('select[name="tipificacion"]');
+        const motivoNoInteresContainer = this.querySelector('div[data-motivo-container]');
+        
+        // Función para controlar la visibilidad
+        const toggleMotivoVisibility = () => {
+            const mostrar = tipificacionSelect.value === 'Sin interes';
+            motivoNoInteresContainer.style.display = mostrar ? 'block' : 'none';
+            if (!mostrar) {
+                motivoNoInteresContainer.querySelector('select').value = '';
+            }
+        };
+
+        // Ejecutar al cargar el modal
+        toggleMotivoVisibility();
+        
+        // Escuchar cambios en la tipificación
+        tipificacionSelect.addEventListener('change', toggleMotivoVisibility);
+    });
+</script>
   </body>
 </html>
