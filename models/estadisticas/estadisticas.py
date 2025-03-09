@@ -1,88 +1,50 @@
-from flask import Flask, render_template
-import matplotlib
+# En tu archivo de rutas (ej: estadisticas.py)
+from flask import Blueprint, jsonify, render_template
+from database.config import mysql
+import plotly.express as px
+import plotly.io as pio
+import MySQLdb
 
-matplotlib.use("Agg")  # Fuerza el uso de un backend sin interfaz gráfica
-import matplotlib.pyplot as plt
-from database.config import db_conexion, mysql  # Importa la conexión desde config.py
-from io import BytesIO
-import base64
+estadisticas_bp = Blueprint('estadisticas', __name__)
 
-app = Flask(__name__)
-db_conexion(app)  # Inicializa la conexión con MySQL
+def obtener_datos_estadisticas():
+    try:
+        connection = mysql.connection
+        cursor = connection.cursor()
+        cursor = connection.cursor(MySQLdb.cursors.DictCursor)
+        # Consulta para estados
+        cursor.execute("""
+            SELECT id_estado, COUNT(*) as cantidad 
+            FROM gestiones 
+            GROUP BY id_estado
+        """)
+        datos_estados = cursor.fetchall()
+        
+        # Consulta para tipificaciones
+        cursor.execute("""
+            SELECT tipificacion, COUNT(*) as cantidad 
+            FROM gestiones 
+            WHERE tipificacion IS NOT NULL
+            GROUP BY tipificacion
+        """)
+        datos_tipificaciones = cursor.fetchall()
+        
+        print(datos_estados)
+        print(datos_tipificaciones)
+        cursor.close()
+        return {
+            'estados': datos_estados,
+            'tipificaciones': datos_tipificaciones
+        }
+    except MySQLdb.Error as e:
+        print(f"Error de base de datos: {e}")
+        return None
 
+@estadisticas_bp.route('/datos_estadisticas')
+def obtener_datos():
+    datos = obtener_datos_estadisticas()
+    return jsonify(datos)
 
-class GeneradorGraficas:
-    def __init__(self, mysql):
-        self.mysql = mysql
-
-    def _ejecutar_consulta(self, query):
-        """Ejecuta una consulta SQL y devuelve los resultados."""
-        cursor = self.mysql.connection.cursor(dictionary=True)
-        try:
-            cursor.execute(query)
-            resultados = cursor.fetchall()
-            print("🔹 Datos obtenidos en Flask:", resultados)  # Depuración
-            return resultados
-        except Exception as e:
-            print(f"❌ Error al ejecutar la consulta: {str(e)}")
-            return None
-        finally:
-            cursor.close()
-
-    def grafico_estados(self):
-        """Genera un gráfico de pastel con la distribución de estados."""
-        try:
-            query = """
-                SELECT e.estado, COUNT(k.id_Kliiker) AS cantidad 
-                FROM estadoKliiker e
-                LEFT JOIN kliiker k ON e.id_estado = k.id_estado
-                GROUP BY e.estado
-            """
-            datos = self._ejecutar_consulta(query)
-
-            if not datos or len(datos) == 0:
-                print("⚠️ No se obtuvieron datos de la base de datos.")
-                return None
-
-            labels = [item["estado"] for item in datos]
-            sizes = [item["cantidad"] for item in datos]
-
-            plt.figure(figsize=(8, 8))
-            plt.pie(
-                sizes,
-                labels=labels,
-                autopct="%1.1f%%",
-                wedgeprops=dict(width=0.3),
-                startangle=90,
-            )
-            plt.title("Distribución de Estados")
-
-            return self._guardar_grafico()
-        except Exception as e:
-            print(f"❌ Error en gráfico de estados: {str(e)}")
-            return None
-
-    def _guardar_grafico(self):
-        """Convierte la imagen generada en un string base64 para ser enviada en una respuesta HTML."""
-        buffer = BytesIO()
-        plt.savefig(buffer, format="png", bbox_inches="tight")
-        buffer.seek(0)
-        imagen = base64.b64encode(buffer.getvalue()).decode()
-        plt.close()
-        return f"data:image/png;base64,{imagen}"
-
-
-generador_graficas = GeneradorGraficas(mysql)
-
-
-@app.route("/")
-def index():
-    """Ruta principal que renderiza la página con las gráficas."""
-    grafico_estados = generador_graficas.grafico_estados()
-    return render_template(
-        "estadisticas/estadisticas.html", grafico_estados=grafico_estados
-    )
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+@estadisticas_bp.route('/graficos')
+def mostrar_graficos():
+    return render_template('estadisticas/estadisticas.html')

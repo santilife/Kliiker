@@ -2,6 +2,7 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from flask_login import LoginManager
+from flask_cors import CORS
 
 # --------------------------- Importación blueprints -------------------------- #
 # from auth.admin.administrador import admin_bp
@@ -13,13 +14,13 @@ from database.config import db_conexion
 from auth.auth_users import administradores, asesores_generales, auth, iniciar_sesion
 from models.mostrar.view_usersAS import mostrar_asesores_tables
 from models.insertar.ins_usersAS import insertar_asesor
-
+from models.estadisticas.estadisticas import estadisticas_bp
 
 # from models.descargarDB.downloadDB import downloadDB
 
 # -------------------------- Inicialización de Flask ------------------------- #
 app = Flask(__name__, template_folder="templates")
-
+CORS(app)
 # ------------------------------ Login Required ------------------------------ #
 '''login_manager = LoginManager(app)
 login_manager.login_view = "login"'''
@@ -41,7 +42,9 @@ app.register_blueprint(mostrar_tablas)
 app.register_blueprint(actualizar_gestion_modal)
 app.register_blueprint(mostrar_asesores_tables)
 app.register_blueprint(insertar_asesor)
+
 # ---- GRAFICAS-----
+app.register_blueprint(estadisticas_bp)
 
 if __name__ == "__main__":
     # Inicia el servidor en modo debug en el puerto 5000

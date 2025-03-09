@@ -1,131 +1,76 @@
+<!-- estadisticas.html -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Datos Estadísticos</title>
+<head>
+    <title>Estadísticas en Tiempo Real</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-      .contenedor {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-      }
-
-      .tarjeta {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin: 20px 0;
-        padding: 20px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-      }
-
-      th,
-      td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-      }
-
-      th {
-        background-color: #f8f9fa;
-      }
-
-      .actualizacion {
-        color: #6c757d;
-        font-size: 0.9em;
-        margin-top: 10px;
-      }
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+        .chart {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
     </style>
-  </head>
-  <body>
-    <div class="contenedor">
-      <!-- Tarjeta para Estados -->
-      <div class="tarjeta">
-        <h2>Estadísticas de Estados</h2>
-        <table id="tabla-estados">
-          <thead>
-            <tr>
-              <th>Estado</th>
-              <th>Total</th>
-              <th>Porcentaje</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Datos se insertarán aquí -->
-          </tbody>
-        </table>
-        <div class="actualizacion" id="actualizacion-estados"></div>
-      </div>
-
-      <!-- Tarjeta para Tipificaciones -->
-      <div class="tarjeta">
-        <h2>Estadísticas de Tipificaciones</h2>
-        <table id="tabla-tipificaciones">
-          <thead>
-            <tr>
-              <th>Tipificación</th>
-              <th>Total</th>
-              <th>Porcentaje</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Datos se insertarán aquí -->
-          </tbody>
-        </table>
-        <div class="actualizacion" id="actualizacion-tipificaciones"></div>
-      </div>
+</head>
+<body>
+    <div class="chart-container">
+        <div id="graficoBarras" class="chart"></div>
+        <div id="graficoAnillo" class="chart"></div>
     </div>
 
     <script>
-      function actualizarDatos(url, tablaId, actualizacionId) {
-        fetch(url)
-          .then((response) => response.json())
-          .then((data) => {
-            const tbody = document.querySelector(`#${tablaId} tbody`);
-            tbody.innerHTML = "";
+        function actualizarGraficos() {
+            fetch('/datos_estadisticas')
+                .then(response => response.json())
+                .then(data => {
+                    // Actualizar gráfico de barras horizontales
+                    let estados = data.estados;
+                    console.log(estados);
+                    Plotly.react('graficoBarras', [{
+                        type: 'bar',
+                        x: estados.map(item => item.cantidad),
+                        y: estados.map(item => item.nombre),
+                        hoverinfo: 'label+percent',
+                        orientation: 'h',
+                        marker: {
+                            color: '#4CAF50'
+                        }
+                    }], {
+                        title: 'Estados de Gestión',
+                        margin: {l: 150}
+                    });
 
-            data.data.forEach((item) => {
-              const row = `
-                            <tr>
-                                <td>${item.nombre}</td>
-                                <td>${item.total}</td>
-                                <td>${item.porcentaje}%</td>
-                            </tr>
-                        `;
-              tbody.innerHTML += row;
-            });
+                    // Actualizar gráfico de anillo
+                    let tipificaciones = data.tipificaciones;
+                    console.log(tipificaciones);
+                    Plotly.react('graficoAnillo', [{
+                        values: tipificaciones.map(item => item.cantidad),
+                        labels: tipificaciones.map(item => item.nombre),
+                        hoverinfo: 'label+percent',
+                        hole: 0.4,
+                        type: 'pie',
+                        marker: {
+                            colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                            
+                        }
+                    }], {
+                        title: 'Tipificaciones'
+                    });
+                });
+        }
 
-            document.getElementById(
-              actualizacionId
-            ).textContent = `Última actualización: ${new Date(
-              data.timestamp
-            ).toLocaleString()}`;
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-
-      function actualizarTodo() {
-        actualizarDatos(
-          "/api/estadisticas/estados",
-          "tabla-estados",
-          "actualizacion-estados"
-        );
-
-        actualizarDatos(
-          "/api/estadisticas/tipificaciones",
-          "tabla-tipificaciones",
-          "actualizacion-tipificaciones"
-        );
-      }
-
-      // Actualizar cada 10 segundos
-      setInterval(actualizarTodo, 10000);
-      window.onload = actualizarTodo;
+        // Actualizar cada 5 segundos
+        setInterval(actualizarGraficos, 5000);
+        
+        // Cargar inicialmente
+        actualizarGraficos();
     </script>
-  </body>
+</body>
 </html>
