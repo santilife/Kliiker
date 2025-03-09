@@ -5,7 +5,7 @@ import plotly.express as px
 import plotly.io as pio
 import MySQLdb
 
-estadisticas_bp = Blueprint('estadisticas', __name__)
+estadisticas_bp = Blueprint('estadisticas_bp', __name__)
 
 def obtener_datos_estadisticas():
     try:
