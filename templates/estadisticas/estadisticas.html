@@ -37,11 +37,16 @@
                         type: 'bar',
                         x: estados.map(item => item.cantidad),
                         y: estados.map(item => item.nombre),
-                        hoverinfo: 'label+percent',
+                        hoverinfo: 'label+percent+value+name',
                         orientation: 'h',
                         marker: {
                             color: '#4CAF50'
-                        }
+                        },
+                        text: data.estados.map(item => `${item.nombre}: ${item.cantidad}`),
+                        textposition: 'auto',
+                        hoverinfo: 'none', // Desactivar tooltip por defecto
+                        hovertemplate: '<b>%{y}</b><br>Cantidad: %{x}<extra></extra>'
+
                     }], {
                         title: 'Estados de Gestión',
                         margin: {l: 150}
@@ -53,13 +58,17 @@
                     Plotly.react('graficoAnillo', [{
                         values: tipificaciones.map(item => item.cantidad),
                         labels: tipificaciones.map(item => item.nombre),
-                        hoverinfo: 'label+percent',
+                        hoverinfo: 'label+percent+value+name',
                         hole: 0.4,
                         type: 'pie',
                         marker: {
                             colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
                             
-                        }
+                        },
+                        textinfo: 'label+percent+value',
+                        texttemplate: '<b>%{label}</b><br>%{value} gestiones<br>(%{percent})',
+                        hoverinfo: 'label+percent+value',
+                        hovertemplate: '<b>%{label}</b><br>Total: %{value}<br>Porcentaje: %{percent}<extra></extra>'
                     }], {
                         title: 'Tipificaciones'
                     });
