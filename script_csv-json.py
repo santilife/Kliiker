@@ -28,7 +28,7 @@ def main():
         if not os.path.exists(csv_file):
             raise FileNotFoundError(f"Archivo '{csv_file}' no encontrado")
 
-        with open(csv_file, "r", encoding="utf-8") as csvfile:
+        with open(csv_file, "r", encoding="latin-1") as csvfile:
             reader = csv.DictReader(csvfile, delimiter=";")
 
             # Convertir encabezados a formato snake_case
