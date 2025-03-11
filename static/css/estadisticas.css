@@ -1,0 +1,273 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
+* {
+  font-family: "Rubik", sans-serif;
+}
+
+/* Estilos generales */
+/* body {
+  margin: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  display: grid;
+  grid-template-areas: "navbar main";
+  grid-template-columns: 250px 1fr;
+  grid-template-rows: 1fr;
+} */
+
+/* Navbar izquierda */
+/* .navbar-custom {
+  grid-area: navbar;
+  background-color: #f2eaea;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+} */
+body {
+  margin: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.navbar-custom {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 215px;
+  background-color: #f2eaea;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-custom div {
+  display: grid;
+  gap: 15px;
+}
+
+.bi-person-circle {
+  font-size: 70px;
+  color: #5043af;
+  margin: 0;
+}
+
+.navbar-custom ul {
+  list-style: none;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  width: 100%;
+}
+
+.navbar-custom .iconos li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  padding: 5px 0;
+  width: 100%;
+  border-bottom: 2px solid #573bb6;
+  border-radius: 10px;
+  & a {
+    text-decoration: none;
+    color: #000000;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: 0.3s;
+    display: block;
+    width: 100%;
+  }
+}
+
+.user {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.navbar-custom .icon li:hover {
+  background-color: #e3dbdb;
+}
+
+.navbar-custom .cerrar-icon {
+  transition: all ease 0.6s;
+  border-radius: 10px;
+  margin-top: 20px;
+
+  & a {
+    text-decoration: none;
+    color: #2c3e50;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: 0.3s;
+    /* display: block; */
+    width: 100%;
+  }
+}
+
+.navbar-custom .cerrar-icon:hover {
+  background-color: rgb(216, 144, 144);
+  transition: all ease 0.6s;
+}
+
+.logo-header {
+  width: 80%;
+  margin-bottom: 20px;
+  align-self: center;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  margin: 5 px 0;
+  padding: 5px;
+}
+
+/* Contenido principal */
+/* .container {
+  grid-area: main;
+  padding: 20px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+} */
+
+/* .container {
+  margin-left: 250px; 
+  padding: 20px;
+  min-height: 100vh;
+
+  & .totales{
+    display: flex;
+  }
+
+} */
+
+
+.contenido {}
+
+input[type ="date"] {
+    background-color: #f8f8f8;
+    margin: 10px;
+}
+
+
+
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper::after {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #718096;
+  pointer-events: none;
+}
+
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f8f8f8;
+  margin-left: 250px;
+
+  & .totales{
+    display: flex;
+  }
+}
+
+.seccion-estadisticas {
+  display: flex;
+  justify-content: center;
+}
+
+
+/* filtros */
+.filtros {
+  background-color: #F2EAEA;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  /* & .contenido{
+    display: flex;
+    text-align: center;
+  } */
+}
+
+.filtro2 {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filtro2 label,
+.filtro2 span {
+  font-size: 15px;
+  color: #333;
+  font-weight: 600;
+  align-items: center;
+}
+
+.filtro2 input[type="date"],
+.filtro2 .select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #F2EAEA;
+  background-color: white;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.filtro2 .select:hover,
+.filtro2 input[type="date"]:hover {
+  border-color: #888;
+}
+
+.filtro2 .select {
+  cursor: pointer;
+}
+
+.contenido{
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .navbar-custom span,
+  .navbar-custom li a {
+    display: none;
+  }
+
+  .logo-header {
+    width: 90%;
+  }
+}

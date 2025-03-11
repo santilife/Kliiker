@@ -5,17 +5,19 @@ import MySQLdb
 
 insertar_asesor = Blueprint("insertar_asesor", __name__)
 
+
 @insertar_asesor.route("/insertar_asesor", methods=["POST"])
 def insertar():
     try:
         print("\n--- Inicio de inserción ---")
-        
+
         # Validación de campos requeridos
         campos_requeridos = {
             "nombre": "Nombre completo",
             "documento": "Documento",
             "usuario": "Usuario",
-            "rol": "Rol"
+            "rol": "Rol",
+            "estado": "Estado",
         }
 
         for campo_form, nombre in campos_requeridos.items():
@@ -34,7 +36,7 @@ def insertar():
         with mysql.connection.cursor() as cursor:
             cursor.execute(
                 "SELECT * FROM usuarios WHERE documento = %s OR usuario = %s",
-                (documento, request.form["usuario"])
+                (documento, request.form["usuario"]),
             )
             if cursor.fetchone():
                 flash("Documento o usuario ya existen en el sistema", "danger")
@@ -49,7 +51,8 @@ def insertar():
             "documento": documento,
             "usuario": request.form["usuario"],
             "rol": request.form["rol"],
-            "password": documento
+            "password": documento,
+            "estadoUsuario": request.form["estado"],
         }
 
         print("Datos procesados:", datos)
@@ -62,21 +65,22 @@ def insertar():
                     documento,
                     usuario,
                     rol,
-                    password
-                ) VALUES (%s, %s, %s, %s, %s)
+                    password,
+                    estadoUsuario
+                ) VALUES (%s, %s, %s, %s, %s, %s)
             """
             parametros = (
                 datos["nombre_AS"],
                 datos["documento"],
                 datos["usuario"],
                 datos["rol"],
-                datos["password"]
+                datos["password"],
+                datos["estadoUsuario"],
             )
 
             print("\nConsulta SQL:", cursor.mogrify(consulta, parametros))
             cursor.execute(consulta, parametros)
             mysql.connection.commit()
-
             flash("Asesor creado exitosamente", "success")
 
     except MySQLdb.IntegrityError as e:

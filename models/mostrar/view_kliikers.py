@@ -5,6 +5,7 @@ from datetime import datetime
 # Blueprint para mostrar las tablas de gestión
 mostrar_tablas = Blueprint("mostrar_tablas", __name__)
 
+
 def obtener_datos_gestion():
     try:
         cursor = mysql.connection.cursor()
@@ -43,7 +44,7 @@ def obtener_datos_gestion():
 
         column_names = [column[0] for column in cursor.description]
         datos = cursor.fetchall()
-        print(datos)
+        # print(datos)
         cursor.close()
         return datos
     except Exception as err:
@@ -54,7 +55,7 @@ def obtener_datos_gestion():
 def obtener_datos_historial():
     try:
         cursor = mysql.connection.cursor()
-        
+
         # Consulta para obtener el historial de gestiones con información relacionada
         consulta = """
             SELECT 
@@ -83,10 +84,43 @@ def obtener_datos_historial():
         cursor.execute(consulta)
         datos_historial = cursor.fetchall()
         return datos_historial
-        
+
     except Exception as err:
         print(f"Error en obtener_datos_historial: {str(err)}")
         return []
+
+
+def total_gestiones():
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            """
+            SELECT celular, COUNT(*) as total 
+            FROM historial_gestiones 
+            WHERE celular REGEXP '^[0-9]+$' -- Solo números
+            GROUP BY celular
+        """
+        )
+        resultados = cursor.fetchall()
+
+        print("Resultados crudos de la consulta:", resultados)
+
+        gestiones_por_celular = {}
+        for resultado in resultados:
+            # Los resultados son diccionarios con las claves 'celular' y 'total'
+            celular = str(resultado["celular"]).strip()
+            total = resultado["total"]
+            gestiones_por_celular[celular] = total
+            # print(f"Celular: '{celular}', Total: {total}")
+
+        # print("Diccionario final:", gestiones_por_celular)
+        return gestiones_por_celular
+
+    except Exception as err:
+        print(f"Error en total_gestiones: {str(err)}")
+        return {}
+    finally:
+        cursor.close()
 
 
 # Ruta para mostrar las tablas de gestión y historial
@@ -94,8 +128,13 @@ def obtener_datos_historial():
 def mostrar_tabla():
     datos_gestion = obtener_datos_gestion()
     datos_historial = obtener_datos_historial()
+    cantidad_gestiones = total_gestiones()
+    # print("Diccionario cantidad_gestiones:", cantidad_gestiones)
+    # if datos_gestion:
+    #     print("Primera fila de datos_gestion:", datos_gestion[0])
     return render_template(
-        "/formGestion/gestion.html", 
+        "/formGestion/gestion.html",
         datos=datos_gestion,
-        datos_historial=datos_historial
+        datos_historial=datos_historial,
+        cantidad_gestiones=cantidad_gestiones,
     )

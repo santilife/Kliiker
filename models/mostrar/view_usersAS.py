@@ -2,7 +2,6 @@ from flask import Blueprint, url_for, render_template
 from database.config import mysql
 
 
-
 # @asesores_tables.route("/asesores_tables")
 # def index():  #     return render_template("mostrar/view_usersAS.html")
 #     return render_template("/asesores/index.html")
@@ -24,7 +23,8 @@ def obtener_asesores():
                 nombre_AS,
                 documento,
                 usuario,
-                rol
+                rol,
+                estadoUsuario
             FROM usuarios
             
         """

@@ -5,22 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link rel="stylesheet" href="../static/css/login.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
   </head>
 
   <body>
-    <div class="form-login">
-      <p class="tittle">Log-In</p>
-      <div>
-        <form action="{{ url_for('auth.acceso') }}" method="post">
-          <input class="in-user" type="text" name="usuario" id="user" /><br />
-          <input
-            class="in-pass"
-            type="password"
-            name="password"
-            id="pass"
-          /><br />
-          <input class="in-submit" type="submit" value="Ingresar" />
-        </form>
+    <div class="container">
+      <div class="form-login">
+        <i class="bi bi-person-circle"></i>
+
+        <div>
+          <form action="{{ url_for('auth.acceso') }}" method="post">
+            <div class="icon">
+              <i class="bi bi-person"></i>
+              <input
+                class="in-user"
+                type="text"
+                name="usuario"
+                id="user"
+                placeholder="Usuario"
+              /><br />
+            </div>
+
+            <div class="icon">
+              <i class="bi bi-lock"></i>
+              <input
+                class="in-pass"
+                type="password"
+                name="password"
+                id="pass"
+                placeholder="Contraseña"
+              /><br />
+            </div>
+            <input class="in-submit" type="submit" value="Ingresar" />
+          </form>
+        </div>
       </div>
     </div>
   </body>

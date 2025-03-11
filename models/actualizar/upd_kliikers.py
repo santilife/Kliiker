@@ -12,7 +12,7 @@ actualizar_gestion_modal = Blueprint("actualizar_gestion_modal", __name__)
 def actualizar_gestion():
     try:
         print("\n--- Inicio de actualización ---")
-        
+
         # Definición de campos obligatorios para la actualización
         campos_requeridos = {
             "id_llamada": "ID de llamada",
@@ -20,7 +20,7 @@ def actualizar_gestion():
             "tipificacion": "Tipificación",
             "canal": "Canal",
             "Descripcion": "Descripción",
-            "id_gestion": "ID de gestión"
+            "id_gestion": "ID de gestión",
         }
 
         # Validación de campos requeridos
@@ -37,20 +37,35 @@ def actualizar_gestion():
             return redirect(url_for("mostrar_tablas.mostrar_tabla"))
 
         # Preparación de datos para la actualización
+
         datos = {
             "id_gestion": request.form["id_gestion"],
             "id_llamada": request.form["id_llamada"],
             "id_estado": id_estado,
             "tipificacion": request.form["tipificacion"],
             "canal": request.form["canal"],
-            "fecha_proxima_gestion": datetime.strptime(request.form["fecha_proxima_gestion"], '%Y-%m-%d').date() if request.form["fecha_proxima_gestion"] else None,
+            "fecha_gestion_actual": datetime.now(),
+            "fecha_proxima_gestion": (
+                datetime.strptime(
+                    request.form["fecha_proxima_gestion"], "%Y-%m-%d"
+                ).date()
+                if request.form["fecha_proxima_gestion"]
+                else None
+            ),
             "comentario": request.form["Descripcion"],
-            "motivoNoInteres": request.form.get("motivo_no_interes") if request.form["tipificacion"] == "Sin interes" else None
+            "motivoNoInteres": (
+                request.form.get("motivo_no_interes")
+                if request.form["tipificacion"] == "Sin interes"
+                else None
+            ),
         }
 
         # Validación específica para tipificación "Sin interes"
         if datos["tipificacion"] == "Sin interes" and not datos["motivoNoInteres"]:
-            flash("Debe seleccionar un motivo cuando la tipificación es 'Sin interés'", "danger")
+            flash(
+                "Debe seleccionar un motivo cuando la tipificación es 'Sin interés'",
+                "danger",
+            )
             return redirect(url_for("mostrar_tablas.mostrar_tabla"))
 
         print("Datos procesados:", datos)
@@ -62,6 +77,7 @@ def actualizar_gestion():
                 SET 
                     id_llamada = %s,
                     id_estado = %s,
+                    id_fecha = %s,
                     tipificacion = %s,
                     canal = %s,
                     motivoNoInteres = %s,
@@ -72,12 +88,13 @@ def actualizar_gestion():
             parametros = (
                 datos["id_llamada"],
                 datos["id_estado"],
+                datos["fecha_actual"],
                 datos["tipificacion"],
                 datos["canal"],
                 datos["motivoNoInteres"],
                 datos["fecha_proxima_gestion"],
                 datos["comentario"],
-                datos["id_gestion"]
+                datos["id_gestion"],
             )
 
             print("\nConsulta SQL:", cursor.mogrify(consulta, parametros))
