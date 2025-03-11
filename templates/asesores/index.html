@@ -10,6 +10,7 @@
   </head>
 
   <body>
+<<<<<<< HEAD
       <div class="navbar-custom" id="navbar">
         <div class="iconos">
           <!-- <i class="bi bi-list"></i> -->
@@ -60,6 +61,33 @@
             </div>
           
             {% endif %}
+=======
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+      <div class="container-fluid">
+        <img
+          src="../../static/img/LogoKliiker.png"
+          class="logo-header me-3"
+          alt="Logo Kliiker"
+        />
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('estadisticas_bp.mostrar_graficos')}}"
+                >Estadísticas</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Administrativo</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}"
+                >Asesor</a
+              >
+            </li>
+>>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
           </ul>
           
          
@@ -70,9 +98,25 @@
             Cerrar sesión
           </a>
       </div>
+<<<<<<< HEAD
         <img
           src="../../static/img/Kliiker-Logo.png"
           alt="Logo Kliiker"
+=======
+    </nav>
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="search-container">
+          <input
+            type="search"
+            id="searchInput"
+            class="form-control"
+            placeholder="Buscar..."
+          />
+        </div>
+        <img
+          src="../../static/img/LogoAndes.png"
+>>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
           class="logo-header"
         />
       </div>

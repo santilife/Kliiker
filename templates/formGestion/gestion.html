@@ -12,6 +12,7 @@
   </head>
 
   <body>
+<<<<<<< HEAD
     <!-- Barra de navegación -->
 
     <div class="navbar-custom" id="navbar">
@@ -30,6 +31,24 @@
               <a href="{{url_for('estadisticas.mostrar_graficos')}}">
                 <i class="bi bi-bar-chart"></i>
                 Estadísticas</a
+=======
+    {% if session["rol"] == "Administrador" %}
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+      <div class="container-fluid">
+        <img
+          src="../../static/img/LogoKliiker.png"
+          class="logo-header me-3"
+          alt="Logo Kliiker"
+        />
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('estadisticas_bp.mostrar_graficos')}}"
+                >Estadísticas</a
+>>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
               >
             </li>
           </div>

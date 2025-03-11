@@ -5,8 +5,12 @@ import plotly.express as px
 import plotly.io as pio
 import MySQLdb
 
+<<<<<<< HEAD
 estadisticas_bp = Blueprint("estadisticas", __name__)
 
+=======
+estadisticas_bp = Blueprint('estadisticas_bp', __name__)
+>>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
 
 def obtener_datos_estadisticas():
     try:
