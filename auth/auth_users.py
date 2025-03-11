@@ -16,7 +16,7 @@ from models.mostrar.view_kliikers import mostrar_tabla
 from database.config import mysql
 from werkzeug.security import check_password_hash
 from auth.decorators import login_required, role_required
-from models.descargarDB.downloadDB import export_json
+from models.descargarDB.downloadDB import download, upload
 
 # -------------------------- Inicialización de Flask ------------------------- #
 app = Flask(__name__)
@@ -27,28 +27,31 @@ administradores = Blueprint("administradores", __name__)
 asesores_generales = Blueprint("asesores_generales", __name__)
 auth = Blueprint("auth", __name__, template_folder="templates")
 
-# ------------------------- Rutas de Administrador -------------------------- #
-@administradores.route("/admin/json")
-def json():
-    return mostrar_tabla(), export_json()
 
 # ------------------------- Rutas de Estadísticas --------------------------- #
 @administradores.route("/estadisticas")
 def ver_estadisticas():
     return render_template("estadisticas/estadisticas.html")
 
+
 # API endpoints para estadísticas
 @administradores.route("/api/estadisticas/estados")
 def api_estados():
-    return jsonify({
-        "timestamp": datetime.now().isoformat(),
-    })
+    return jsonify(
+        {
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
 
 @administradores.route("/api/estadisticas/tipificaciones")
 def api_tipificaciones():
-    return jsonify({
-        "timestamp": datetime.now().isoformat(),
-    })
+    return jsonify(
+        {
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
 
 # ------------------------- Panel de Administración ------------------------- #
 @administradores.route("/admin", methods=["GET", "POST"])
@@ -57,18 +60,31 @@ def api_tipificaciones():
 def admin():
     return mostrar_tabla()
 
+
 # Rutas para gestión de base de datos
 @administradores.route("/admin/downloadDB")
 @login_required
 @role_required("Administrador")
 def downloadDB():
-    return render_template("descargarDB/downloadDB.html")
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT id_db, nombre, date_upload FROM uploaded_db")
+    databases = cur.fetchall()
+    cur.close()
+    return render_template("descargarDB/downloadDB.html", databases=databases)
 
-@administradores.route("/admin/listDB")
-@login_required
-@role_required("Administrador")
-def listDB():
-    return render_template("descargarDB/listDB.html")
+
+# ------------- Rutas para la carga y descarga de bases de datos ------------- #
+# Ruta para subir los archivos .csv
+@administradores.route("/admin/uploadDB", methods=["POST"])
+def handle_upload():
+    return upload()
+
+
+# Ruta para descargar los archivos .csv
+@administradores.route("/admin/download")
+def handle_download(db_id):
+    return download(db_id)
+
 
 # ---------------------------- Panel de Asesores ---------------------------- #
 @asesores_generales.route("/asesor")
@@ -77,11 +93,13 @@ def listDB():
 def asesor():
     return mostrar_tabla()
 
+
 # ------------------------- Gestión de Sesiones ---------------------------- #
 # Ruta para mostrar el formulario de login
 @iniciar_sesion.route("/", methods=["GET", "POST"])
 def login():
     return render_template("login.html")
+
 
 # Ruta para procesar el inicio de sesión
 @auth.route("/acceso", methods=["GET", "POST"])
@@ -90,7 +108,11 @@ def acceso():
     db_conexion(app)
 
     # Verifica credenciales del usuario
-    if request.method == "POST" and "usuario" in request.form and "password" in request.form:
+    if (
+        request.method == "POST"
+        and "usuario" in request.form
+        and "password" in request.form
+    ):
         usuario = request.form["usuario"]
         password = request.form["password"]
 
@@ -118,6 +140,7 @@ def acceso():
         else:
             return render_template("login.html")
     return render_template("login.html")
+
 
 # Ruta para cerrar sesión
 @auth.route("/logout")
