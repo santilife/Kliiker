@@ -176,8 +176,10 @@ body {
 
 /* Botones de tablas */
 .table-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* display: grid; */
+  /* grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); */
+  display: flex;
+  justify-content: center;
   gap: 20px;
   margin-bottom: 20px;
 }

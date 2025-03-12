@@ -32,7 +32,7 @@ def obtener_asesores():
 
         column_names = [column[0] for column in cursor.description]
         datos = cursor.fetchall()
-        print(datos)
+        # print(datos)
         # Convertir a diccionarios (HABILITAR)
         # resultados = [dict(zip(column_names, row)) for row in datos]
 

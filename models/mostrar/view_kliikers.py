@@ -7,6 +7,23 @@ mostrar_tablas = Blueprint("mostrar_tablas", __name__)
 
 
 def obtener_datos_gestion():
+    
+    # tipificaciones = {
+    #     1: "Buzón de voz",
+    #     2: "Equivocado",
+    #     3: "Información general",
+    #     4: "Interesado a futuro",
+    #     5: "Leed ya compro",
+    #     6: "No contesta",
+    #     7: "Novedad en el registro",
+    #     8: "Registro exitoso",
+    #     9: "Seguimiento",
+    #     10: "Sin interes",
+    #     11: "Volver a llamar",
+    # }
+    
+    
+    
     try:
         cursor = mysql.connection.cursor()
 
@@ -32,18 +49,19 @@ def obtener_datos_gestion():
                 u.nombre_AS AS asesor,
                 t.tipificacion,
                 g.motivoNoInteres,
-                g.tipificacion AS tipGestion
+                g.id_tipificacion,
+                t.tipificacion AS tipificacion_texto
             FROM kliiker k
             LEFT JOIN gestiones g ON k.celular = g.celular
             LEFT JOIN usuarios u ON g.nombre_AS = u.nombre_AS
-            LEFT JOIN tipificacion t ON g.tipificacion = t.tipificacion
+            LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
             LEFT JOIN estadoKliiker e ON k.id_estado = e.id_estado
             ORDER BY g.fecha DESC
         """
         cursor.execute(consulta)
-
-        column_names = [column[0] for column in cursor.description]
         datos = cursor.fetchall()
+        print(datos)
+        column_names = [column[0] for column in cursor.description]
         # print(datos)
         cursor.close()
         return datos
@@ -60,7 +78,7 @@ def obtener_datos_historial():
         consulta = """
             SELECT 
                 h.id_historial,
-                h.id_gestion,
+                h.id_gestion as idGestion,
                 h.id_llamada,
                 h.fecha,
                 h.canal,
@@ -68,18 +86,20 @@ def obtener_datos_historial():
                 h.comentario,
                 h.fechaProximaGestion,
                 h.nombre_AS as asesor,
-                h.tipificacion,
+                h.id_tipificacion,
                 h.celular,
                 h.motivoNoInteres,
                 k.id_Kliiker AS idKliiker,
                 k.nombre,
                 k.apellido,
                 k.nivel,
-                e.estado
+                e.estado,
+                t.tipificacion
             FROM historial_gestiones h
             LEFT JOIN kliiker k ON h.celular = k.celular
             LEFT JOIN estadokliiker e ON h.id_estado = e.id_estado
-            ORDER BY h.fecha DESC
+            LEFT JOIN tipificacion t ON h.id_tipificacion = t.id_tipificacion
+            ORDER BY h.id_historial DESC
         """
         cursor.execute(consulta)
         datos_historial = cursor.fetchall()
@@ -103,7 +123,7 @@ def total_gestiones():
         )
         resultados = cursor.fetchall()
 
-        print("Resultados crudos de la consulta:", resultados)
+        # print("Resultados crudos de la consulta:", resultados)
 
         gestiones_por_celular = {}
         for resultado in resultados:

@@ -1,303 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración</title>
-  <link rel="stylesheet" href="/static/css/asesor.css">  <!-- Vinculamos el CSS externo -->
-  <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-  </head>
+  <link rel="stylesheet" href="/static/css/asesor.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
 
-  <body>
-<<<<<<< HEAD
-      <div class="navbar-custom" id="navbar">
-        <div class="iconos">
-          <!-- <i class="bi bi-list"></i> -->
-          <ul>
-            <span class="user"><i class="bi bi-person-circle"></i>
-              <br />
-              Hola {{session["usuario"]}} ({{session["rol"]}})
-            </span>
-              {% if session['rol'] == 'Administrador' %}
-
-              <div class="icon">
-                <li>
-                  <a href="{{url_for('estadisticas.mostrar_graficos')}}"
-                    >
-                    <i class="bi bi-bar-chart"></i>
-                    Estadísticas</a
-                  >
-                </li>
-              </div>
-              {% endif %}
-            <div class="icon">
-              <li>
-                <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
-                  <i class="bi bi-folder2"></i>
-                  Gestión</a>
-              </li>
-            </div>
-            {% if session['rol'] == 'Administrador' %}
-           
-
-            <div class="icon">
-              <li>
-              <a href="{{url_for('administradores.downloadDB')}}">
-                <i class="bi bi-file-earmark-text"></i>
-                Administrativo
-              </a>
-              </li>
-            </div>
-
-            <div class="icon">
-              <li>
-                <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}"
-                  >
-                  <i class="bi bi-person"></i>
-                  Asesor
-                  </a>
-              </li>
-            </div>
-          
-            {% endif %}
-=======
-    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-      <div class="container-fluid">
-        <img
-          src="../../static/img/LogoKliiker.png"
-          class="logo-header me-3"
-          alt="Logo Kliiker"
-        />
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url_for('estadisticas_bp.mostrar_graficos')}}"
-                >Estadísticas</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Administrativo</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}"
-                >Asesor</a
-              >
-            </li>
->>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
-          </ul>
-          
-         
+<body>
+  <!-- Navbar -->
+  <div class="navbar-custom" id="navbar">
+    <div class="iconos">
+      <ul>
+        <span class="user">
+          <i class="bi bi-person-circle"></i><br>
+          Hola {{session["usuario"]}} ({{session["rol"]}})
+        </span>
+        
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('estadisticas.mostrar_graficos')}}">
+              <i class="bi bi-bar-chart"></i>Estadísticas
+            </a>
+          </li>
         </div>
-        <div class="cerrar-icon">
-          <a href="{{ url_for('auth.logout') }}"> 
-            <i class="bi bi-arrow-right-circle"></i>
-            Cerrar sesión
-          </a>
-      </div>
-<<<<<<< HEAD
-        <img
-          src="../../static/img/Kliiker-Logo.png"
-          alt="Logo Kliiker"
-=======
-    </nav>
-    <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="search-container">
-          <input
-            type="search"
-            id="searchInput"
-            class="form-control"
-            placeholder="Buscar..."
-          />
+        {% endif %}
+        
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
+              <i class="bi bi-folder2"></i>Gestión
+            </a>
+          </li>
         </div>
-        <img
-          src="../../static/img/LogoAndes.png"
->>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
-          class="logo-header"
-        />
+
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('administradores.downloadDB')}}">
+              <i class="bi bi-file-earmark-text"></i>Administrativo
+            </a>
+          </li>
+        </div>
+
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
+              <i class="bi bi-person"></i>Asesor
+            </a>
+          </li>
+        </div>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="cerrar-icon">
+      <a href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-arrow-right-circle"></i>Cerrar sesión
+      </a>
+    </div>
+    <img src="../../static/img/Kliiker-Logo.png" alt="Logo Kliiker" class="logo-header">
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="container-tables">
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+      <div class="search-group">
+        <i class="bi bi-search"></i>
+        <input type="search" id="searchInput" placeholder="Buscar...">
       </div>
+      <img src="../../static/img/AndesBPO-Logo.png" alt="Logo Andes">
+    </div>
 
+    <!-- Botón agregar -->
+    <div class="table-buttons">
+      <button class="tab" onclick="abrirModal()">Agregar Asesor</button>
+    </div>
 
+    <!-- Tabla -->
+    <div class="table-container active">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre_AS</th>
+            <th>Documento</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in datos %}
+          <tr>
+            <td>{{ fila.nombre_AS }}</td>
+            <td>{{ fila.documento }}</td>
+            <td>{{ fila.usuario }}</td>
+            <td>{{ fila.rol }}</td>
+            <td>{{ fila.estadoUsuario }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-
-      <div class="container-tables">
-        <div class="search-bar" id="search-bar">
-          <div class="search-group">
-            <i class="bi bi-search"></i>
-            <input type="search" id="searchInput" placeholder="Buscar..." />
-          </div>
-          <img src="../../static/img/AndesBPO-Logo.png" alt="Logo Andes" />
+    <!-- Modal -->
+    <div class="modal-container" id="detalleModal">
+      <div class="modal-contenido">
+        <div class="modal-header">
+          <h5 class="modal-title">Asesor</h5>
+          <span class="modal-cerrar" onclick="cerrarModal()">&times;</span>
         </div>
         
-          <!-- ------------------------- Boton mostrar modal ------------------------- -->
-      <div class="table-buttons">
-        <button class="btn-abrir-modal tab" onclick="abrirModal()">Agregar Asesor</button>      
-      </div>
-
-
-  
-
-    
-      <!-- ----------------------------------------------------------------------- -->
-      <!--                             Tabla Asesores                              -->
-      <!-- ----------------------------------------------------------------------- -->
-      <div class="table-container active" id="gestionTable">
-        <table class="table table-hover tabla-datos">
-          <thead class="table-light">
-            <tr>
-              <th>Nombre_AS</th>
-              <th>Documento</th>
-              <th>Usuario</th>
-              <th>Rol</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for fila in datos %}
-            <tr>
-              <td>
-                  {{ fila.nombre_AS }}
-              </td>
-              <td>{{ fila.documento }}</td>
-              <td>{{ fila.usuario }}</td>
-              <td>{{ fila.rol }}</td>
-              <td>{{ fila.estadoUsuario }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- ----------------------------- Paginación ------------------------------ -->
-      
-
-
-
-
-
-
-
-
-
-
-    <!-- -------------------------------- Modal -------------------------------- -->
-    <div class="modal-container" id="detalleModal">
-        <div class="modal-contenido">
-          <div class="modal-header">
-            <h5 class="modal-title">Asesor</h5>
-            <span class="modal-cerrar" onclick="cerrarModal()">&times;</span>
+        <form method="POST" action="{{url_for('insertar_asesor.insertar')}}">
+          <div class="form-group">
+            <label class="form-label">Usuario</label>
+            <input type="text" class="form-control" name="usuario" required>
           </div>
-          <form
-            method="POST"
-            action="{{url_for('insertar_asesor.insertar')}}"
-          >
-            <div class="modal-body">
-              <div class="mb-3">
-                <div class="id_usuario1">
-                  <label for="usuario" class="form-label">Usuario</label>
-                  <input type="text" class="form-control id_usuario" id="usuario" name="usuario" required>
-                </div>
 
-                <div class="group1">
-                  <div class="form-group">
-
-                    <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
-                  </div>
-
-                  <div class="form-group">
-
-                    <label for="documento" class="form-label">Documento</label>
-                    <input type="text" class="form-control" id="documento" name="documento" required>
-                  </div>
-
-  
-                </div>
-
-                <div class="group2">
-
-                  <div class="form-group">
-                    <label for="rol" class="form-label">Rol</label>
-                    <select class="form-select mt-3" id="rol" name="rol" required>
-                      <option value="">Seleccionar</option>
-                      <option value="Asesor">Asesor</option>
-                      <option value="Administrador">Administrador</option>
-                    </select>
-                  </div>
-                  
-                  <div class="form-group">
-
-                    <label for="estadoUsuario" class="form-label">Estado</label>
-                    <select class="form-select mt-3" id="estado" name="estado" required>
-                      <option value="">Seleccionar</option>
-                      <option value="1">Activo</option>
-                      <option value="2">Inactivo</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Guardar</button>
-              </div>
+          <div class="group1">
+            <div class="form-group">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" name="nombre" required>
             </div>
+            <div class="form-group">
+              <label class="form-label">Documento</label>
+              <input type="text" class="form-control" name="documento" required>
+            </div>
+          </div>
 
-          </form>
-        </div>
+          <div class="group2">
+            <div class="form-group">
+              <label class="form-label">Rol</label>
+              <select class="form-select" name="rol" required>
+                <option value="">Seleccionar</option>
+                <option value="Asesor">Asesor</option>
+                <option value="Administrador">Administrador</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estado</label>
+              <select class="form-select" name="estado" required>
+                <option value="">Seleccionar</option>
+                <option value="1">Activo</option>
+                <option value="2">Inactivo</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">Guardar</button>
+        </form>
+      </div>
     </div>
-  
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-       //Mostrar modal
-     // Funciones para abrir/cerrar
-function abrirModal() {
-    document.getElementById("detalleModal").style.display = "flex";
-}
+  </div>
 
-function cerrarModal() {
-    document.getElementById("detalleModal").style.display = "none";
-}
-
-// Cerrar al hacer clic fuera del modal
-window.onclick = function(event) {
-    const modal = document.getElementById("detalleModal");
-    if (event.target === modal) {
-        cerrarModal();
+  <script>
+    // Funciones del modal
+    function abrirModal() {
+      document.getElementById("detalleModal").style.display = "flex";
     }
-};
-    
-      // Búsqueda optimizada
-      document
-        .getElementById("searchInput")
-        .addEventListener("input", function (e) {
-          const filter = e.target.value
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toUpperCase();
-          const activeTable = document.querySelector(
-            ".table-container.active table"
-          );
 
-          Array.from(activeTable.querySelectorAll("tbody tr")).forEach(
-            (row) => {
-              const text = Array.from(row.children)
-                .map((cell) =>
-                  cell.textContent
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "")
-                    .toUpperCase()
-                )
-                .join(" ");
-              row.style.display = text.includes(filter) ? "" : "none";
-            }
-          );
-        });
+    function cerrarModal() {
+      document.getElementById("detalleModal").style.display = "none";
+    }
 
-     
-    </script>
-  </body>
+    // Cerrar al hacer click fuera
+    window.onclick = function(event) {
+      const modal = document.getElementById("detalleModal");
+      if (event.target === modal) cerrarModal();
+    };
+
+    // Búsqueda
+    document.getElementById("searchInput").addEventListener("input", function(e) {
+      const filter = e.target.value.toUpperCase();
+      const rows = document.querySelectorAll(".table-container tbody tr");
+      
+      rows.forEach(row => {
+        const text = Array.from(row.children)
+          .map(cell => cell.textContent.toUpperCase())
+          .join(" ");
+        row.style.display = text.includes(filter) ? "" : "none";
+      });
+    });
+  </script>
+</body>
 </html>

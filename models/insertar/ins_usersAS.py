@@ -8,6 +8,8 @@ insertar_asesor = Blueprint("insertar_asesor", __name__)
 
 @insertar_asesor.route("/insertar_asesor", methods=["POST"])
 def insertar():
+    
+    
     try:
         print("\n--- Inicio de inserción ---")
 

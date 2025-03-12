@@ -25,80 +25,69 @@
     </style>
   </head>
   <body>
-    <div class="navbar-custom" id="navbar">
-      <div class="iconos">
-        <!-- <i class="bi bi-list"></i> -->
-        <ul>
-          <span class="user"
-            ><i class="bi bi-person-circle"></i>
-            <br />
-            Hola {{session["usuario"]}} ({{session["rol"]}})
-          </span>
-          <div>
-            {% if session['rol'] == 'Administrador' %}
+    <!-- Navbar -->
+  <div class="navbar-custom" id="navbar">
+    <div class="iconos">
+      <ul>
+        <span class="user">
+          <i class="bi bi-person-circle"></i><br>
+          Hola {{session["usuario"]}} ({{session["rol"]}})
+        </span>
+        
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('estadisticas.mostrar_graficos')}}">
+              <i class="bi bi-bar-chart"></i>Estadísticas
+            </a>
+          </li>
+        </div>
+        {% endif %}
+        
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
+              <i class="bi bi-folder2"></i>Gestión
+            </a>
+          </li>
+        </div>
 
-            <div class="icon">
-              <li>
-                <a href="{{url_for('estadisticas.mostrar_graficos')}}">
-                  <i class="bi bi-bar-chart"></i>
-                  Estadísticas</a
-                >
-              </li>
-            </div>
-            {% endif %}
-            <div class="icon">
-              <li>
-                <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
-                  <i class="bi bi-folder2"></i>
-                  Gestión</a
-                >
-              </li>
-            </div>
-            {% if session['rol'] == 'Administrador' %}
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('administradores.downloadDB')}}">
+              <i class="bi bi-file-earmark-text"></i>Administrativo
+            </a>
+          </li>
+        </div>
 
-            <div class="icon">
-              <li>
-                <a href="{{url_for('administradores.downloadDB')}}">
-                  <i class="bi bi-file-earmark-text"></i>
-                  Administrativo
-                </a>
-              </li>
-            </div>
-
-            <div class="icon">
-              <li>
-                <a
-                  href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}"
-                >
-                  <i class="bi bi-person"></i>
-                  Asesor
-                </a>
-              </li>
-            </div>
-          </div>
-          {% endif %}
-        </ul>
-      </div>
-      <div class="cerrar-icon">
-        <a href="{{ url_for('auth.logout') }}">
-          <i class="bi bi-arrow-right-circle"></i>
-          Cerrar sesión
-        </a>
-      </div>
-      <img
-        src="../../static/img/Kliiker-Logo.png"
-        alt="Logo Kliiker"
-        class="logo-header"
-      />
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
+              <i class="bi bi-person"></i>Asesor
+            </a>
+          </li>
+        </div>
+        {% endif %}
+      </ul>
     </div>
 
-    <!-- ----------------------------------------------------------------------------------------------------------- -->
-    <div class="container">
+    <div class="cerrar-icon">
+      <a href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-arrow-right-circle"></i>Cerrar sesión
+      </a>
+    </div>
+    <img src="../../static/img/Kliiker-Logo.png" alt="Logo Kliiker" class="logo-header">
+  </div>
+
+  
+    <!-- Contenedor de las estadisticas -->
+  <div class="container">
       <div class="totales">
         <div class="seccion-total">
           <div class="tarjetas-container">
             {% for ventas in datos.ventas %}
-            <div class="tarjeta-estadisticaCompras">
+            <div class="total-compras">
               <h4>Compras</h4>
               <p>{{ ventas.ventasExitosas }}</p>
             </div>
@@ -188,17 +177,17 @@
             <span class="">Tipificaciones</span>
             <select class="select">
               <option>Seleccione</option>
-              <option>Buzón de voz</option>
-              <option>Equivocado</option>
-              <option>Información general</option>
-              <option>Interesado a futuro</option>
-              <option>Leed ya compro</option>
-              <option>No contesta</option>
-              <option>Novedad en el registro</option>
-              <option>Registro exitoso</option>
-              <option>Seguimiento</option>
-              <option>Sin interes</option>
-              <option>Volver a llamar</option>
+              <option value="1">Buzón de voz</option>
+              <option value="2">Equivocado</option>
+              <option value="3">Información general</option>
+              <option value="4">Interesado a futuro</option>
+              <option value="5">Leed ya compro</option>
+              <option value="6">No contesta</option>
+              <option value="7">Novedad en el registro</option>
+              <option value="8">Registro exitoso</option>
+              <option value="9">Seguimiento</option>
+              <option value="10">Sin interes</option>
+              <option value="11">Volver a llamar</option>
             </select>
           </div>
         </div>

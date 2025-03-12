@@ -12,78 +12,53 @@
   </head>
 
   <body>
-<<<<<<< HEAD
     <!-- Barra de navegación -->
-
     <div class="navbar-custom" id="navbar">
       <div class="iconos">
-        <!-- <i class="bi bi-list"></i> -->
         <ul>
-          <span class="user"
-            ><i class="bi bi-person-circle"></i>
-            <br />
+          <span class="user">
+            <i class="bi bi-person-circle"></i><br>
             Hola {{session["usuario"]}} ({{session["rol"]}})
           </span>
+          
           {% if session['rol'] == 'Administrador' %}
-
           <div class="icon">
             <li>
               <a href="{{url_for('estadisticas.mostrar_graficos')}}">
-                <i class="bi bi-bar-chart"></i>
-                Estadísticas</a
-=======
-    {% if session["rol"] == "Administrador" %}
-    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-      <div class="container-fluid">
-        <img
-          src="../../static/img/LogoKliiker.png"
-          class="logo-header me-3"
-          alt="Logo Kliiker"
-        />
-        <div class="collapse navbar-collapse">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" href="{{url_for('mostrar_tablas.mostrar_tabla')}}">Gestión</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{url_for('estadisticas_bp.mostrar_graficos')}}"
-                >Estadísticas</a
->>>>>>> d58bdc4b134af41e787e5be44a8438d1e7aaf96b
-              >
+                <i class="bi bi-bar-chart"></i>Estadísticas
+              </a>
             </li>
           </div>
           {% endif %}
+          
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
-                <i class="bi bi-folder2"></i>
-                Gestión</a
-              >
+                <i class="bi bi-folder2"></i>Gestión
+              </a>
             </li>
           </div>
+  
           {% if session['rol'] == 'Administrador' %}
-
           <div class="icon">
             <li>
               <a href="{{url_for('administradores.downloadDB')}}">
-                <i class="bi bi-file-earmark-text"></i>
-                Administrativo
+                <i class="bi bi-file-earmark-text"></i>Administrativo
               </a>
             </li>
           </div>
-
+  
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
-                <i class="bi bi-person"></i>
-                Asesor
+                <i class="bi bi-person"></i>Asesor
               </a>
             </li>
           </div>
-
           {% endif %}
         </ul>
       </div>
+  
       <div class="cerrar-icon">
         <a href="{{ url_for('auth.logout') }}">
           <i class="bi bi-arrow-right-circle"></i>
@@ -109,10 +84,22 @@
 
       <!-- Botones de tablas -->
       <div class="table-buttons" id="table-buttons">
-        <button class="tab active" onclick="mostrarTabla('gestion')">
+        <button
+          class="tab active"
+          onclick="mostrarTabla('gestion')"
+          role="tab"
+          aria-controls="gestionTable"
+          aria-selected="true"
+        >
           Gestión
         </button>
-        <button class="tab" onclick="mostrarTabla('historial')">
+        <button
+          class="tab"
+          onclick="mostrarTabla('historial')"
+          role="tab"
+          aria-controls="historialTable"
+          aria-selected="false"
+        >
           Historial
         </button>
       </div>
@@ -144,7 +131,7 @@
                   data-apellido="{{ fila.apellido }}"
                   data-celular="{{ fila.celular }}"
                   data-motivonoint="{{ fila.motivoNoInteres }}"
-                  data-tipificacion="{{ fila.tipGestion }}"
+                  data-tipificacion="{{ fila.id_tipificacion }}"
                   data-canal="{{ fila.canal }}"
                   data-fechaproxima="{{ fila.fecha_proxima_gestion }}"
                   data-descripcion="{{ fila.comentario }}"
@@ -158,17 +145,12 @@
               <td>{{ fila.celular }}</td>
               <td>{{ 'Sí' if fila.nivel else 'No'}}</td>
               <td>{{ fila.idKliiker }}</td>
-              <td>{{ fila.tipGestion }}</td>
+              <td>{{ fila.tipificacion }}</td>
               <td>
                 {% set celular_normalizado = fila.celular|string|trim %} {% if
                 celular_normalizado in cantidad_gestiones %} {{
-                cantidad_gestiones[celular_normalizado] }} {% else %} 0
-                <!-- Mensaje de depuración oculto -->
-                <span style="display: none">
-                  No encontrado: '{{ celular_normalizado }}'. Claves
-                  disponibles: {{ cantidad_gestiones.keys()|list }}
-                </span>
-                {% endif %}
+                cantidad_gestiones[celular_normalizado] }} {% else %} 0 {% endif
+                %}
               </td>
             </tr>
             {% endfor %}
@@ -213,105 +195,19 @@
       </div>
 
       <!-- Modal -->
-      <!-- <div class="modal-container" id="detalleModal">
-        <div class="modal-content">
-          <div class="title">
-            <h5>Gestión de Cliente</h5>
-            <button data-bs-dismiss="modal">X</button>
-          </div>
-          <form
-            method="POST"
-            action="{{ url_for('actualizar_gestion_modal.actualizar_gestion')}}"
-          >
-            <div>
-              <input type="hidden" name="id_gestion" id="modalIdGestion" />
-              <div>
-                <label>ID Llamada</label>
-                <input type="text" name="id_llamada" required />
-              </div>
-              <div>
-                <label>Estado</label>
-                <select name="id_estado" required>
-                  <option value="">Seleccione</option>
-                  <option value="1">Día 1</option>
-                  <option value="2">Día 2</option>
-                  <option value="3">Día 3</option>
-                </select>
-              </div>
-              <div>
-                <label>Tipificación</label>
-                <select name="tipificacion" required>
-                  <option value="">Seleccione</option>
-                  <option value="No contesta">No contesta</option>
-                  <option value="Buzón de voz">Buzón de voz</option>
-                  <option value="Información general">
-                    Información general
-                  </option>
-                  <option value="Sin interes">Sin interés</option>
-                  <option value="Equivocado">Equivocado</option>
-                  <option value="Registro exitoso">Registro exitoso</option>
-                </select>
-              </div>
-              <div>
-                <label>Canal</label>
-                <select name="canal" required>
-                  <option value="">Seleccione</option>
-                  <option value="Whatsapp">Whatsapp</option>
-                  <option value="Via telefonica">Vía telefónica</option>
-                </select>
-              </div>
-              <div data-motivo-container>
-                <label>Motivo no interés</label>
-                <select name="motivo_no_interes">
-                  <option value="">Seleccione</option>
-                  <option value="Consiguio trabajo">Consiguió trabajo</option>
-                  <option value="Precio alto">Precio alto</option>
-                  <option value="Confusión oferta de empleo">
-                    Confusión oferta de empleo
-                  </option>
-                  <option value="Pensaba que era diferente">
-                    Pensaba que era diferente
-                  </option>
-                  <option value="Estafa">Estafa</option>
-                </select>
-              </div>
-              <div>
-                <label>Tipo gestión</label>
-                <select name="tipoGestion" required>
-                  <option value="">Seleccione</option>
-                  <option value="Entrada">Entrada</option>
-                  <option value="Salida">Salida</option>
-                </select>
-              </div>
-              <div>
-                <label>Fecha próxima llamada</label>
-                <input type="date" name="fecha_proxima_gestion" />
-              </div>
-              <div>
-                <label>Descripción</label>
-                <input type="text" name="Descripcion" required />
-              </div>
-            </div>
-            <div>
-              <button type="submit">Guardar Cambios</button>
-            </div>
-          </form>
-        </div>
-      </div> -->
       <div class="modal-container" id="detalleModal">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Gestión</h5>
+            <h5 class="modal-title">Gestión de Cliente</h5>
             <button class="close-btn" data-bs-dismiss="modal">✕</button>
           </div>
-
           <form
             method="POST"
             action="{{ url_for('actualizar_gestion_modal.actualizar_gestion')}}"
           >
-            <!-- Campos del formulario -->
+            <input type="hidden" name="celular" id="celular" value="{{ datos.celular }}" />
             <div class="form-group">
-              <input type="hidden" name="id_gestion" id="modalIdGestion" />
+              <input type="hidden" name="id_gestion" id="modalIdGestion" value="{{ datos.idGestion }}"  />
             </div>
 
             <div class="form-group id_llamada">
@@ -330,10 +226,10 @@
                 <div class="select-wrapper">
                   <select class="form-control" name="id_estado" required>
                     <option value="">Seleccione</option>
-                    <option value="1">llamada 1</option>
-                    <option value="2">llamada 2</option>
-                    <option value="3">llamada 3</option>
-                    <option value="4">llamada 4</option>
+                    <option value="1">Llamada 1</option>
+                    <option value="2">Llamada 2</option>
+                    <option value="3">Llamada 3</option>
+                    <option value="4">Llamada 4</option>
                   </select>
                 </div>
               </div>
@@ -341,40 +237,30 @@
               <div class="form-group">
                 <label class="form-label">Tipificación</label>
                 <div class="select-wrapper">
-                  <select class="form-control" name="tipificacion" required>
-                    <option selected>Seleccione</option>
-                    <option>Buzón de voz</option>
-                    <option>Equivocado</option>
-                    <option>Información general</option>
-                    <option>Interesado a futuro</option>
-                    <option>Lead ya compro</option>
-                    <option>No contesta</option>
-                    <option>Novedad en el registro</option>
-                    <option>Registro exitoso</option>
-                    <option>Seguimiento</option>
-                    <option>Sin interes</option>
-                    <option>Volver a llamar</option>
+                  <select class="form-control" name="id_tipificacion" required>
+                    <option value="">Seleccione</option>
+                    <option value="1">Buzón de voz</option>
+                    <option value="2">Equivocado</option>
+                    <option value="3">Información general</option>
+                    <option value="4">Interesado a futuro</option>
+                    <option value="5">Leed ya compro</option>
+                    <option value="6">No contesta</option>
+                    <option value="7">Novedad en el registro</option>
+                    <option value="8">Registro exitoso</option>
+                    <option value="9">Seguimiento</option>
+                    <option value="10">Sin interes</option>
+                    <option value="11">Volver a llamar</option>
                   </select>
                 </div>
               </div>
+
               <div class="form-group" data-motivo-container id="motivo">
                 <label class="form-label">Motivo no interés</label>
                 <div class="select-wrapper">
-                  <select
-                    class="form-control"
-                    name="motivo_no_interes"
-                    disabled
-                  >
+                  <select class="form-control" name="motivo_no_interes" disabled>
                     <option value="">Seleccione</option>
                     <option value="Consiguió trabajo">Consiguió trabajo</option>
                     <option value="Precio alto">Precio alto</option>
-                    <option value="Confusión oferta de empleo">
-                      Confusión oferta de empleo
-                    </option>
-                    <option value="Pensaba que era diferente">
-                      Pensaba que era diferente
-                    </option>
-                    <option value="Estafa">Estafa</option>
                   </select>
                 </div>
               </div>
@@ -428,23 +314,17 @@
     </div>
 
     <script>
-      // Función para mostrar tablas con animación
+      // Función para mostrar tablas
       function mostrarTabla(tipo) {
-        // Ocultar todas las tablas con transición
         document.querySelectorAll(".table-container").forEach((t) => {
           t.style.opacity = "0";
           t.style.transform = "translateY(10px)";
-          setTimeout(() => {
-            t.style.display = "none";
-          }, 300);
+          setTimeout(() => (t.style.display = "none"), 300);
         });
 
-        // Remover clase active de todos los botones
         document
           .querySelectorAll(".tab")
           .forEach((t) => t.classList.remove("active"));
-
-        // Mostrar tabla seleccionada con animación
         const tabla = document.getElementById(`${tipo}Table`);
         setTimeout(() => {
           tabla.style.display = "block";
@@ -453,8 +333,6 @@
             tabla.style.transform = "translateY(0)";
           }, 10);
         }, 300);
-
-        // Activar botón correspondiente
         document
           .querySelector(`button[onclick*="${tipo}"]`)
           .classList.add("active");
@@ -470,7 +348,6 @@
           );
 
           if (!activeTable) return;
-
           activeTable.querySelectorAll("tbody tr").forEach((row) => {
             const text = Array.from(row.children)
               .map((cell) => cell.textContent.toUpperCase())
@@ -479,146 +356,85 @@
           });
         });
 
-      // Manejo del modal
-      // document
-      //   .querySelectorAll('[data-bs-toggle="modal"]')
-      //   .forEach((button) => {
-      //     button.addEventListener("click", function () {
-      //       const modal = document.getElementById("detalleModal");
-      //       const fieldMap = {
-      //         "#modalIdGestion": "idgestion",
-      //         'input[name="id_llamada"]': "idllamada",
-      //         'select[name="id_estado"]': "id_estado",
-      //         'select[name="tipificacion"]': "tipificacion",
-      //         'select[name="canal"]': "canal",
-      //         'select[name="tipoGestion"]': "tipogestion",
-      //         'select[name="motivo_no_interes"]': "motivonoint",
-      //         'input[name="fecha_proxima_gestion"]': "fechaproxima",
-      //         'input[name="Descripcion"]': "descripcion",
-      //       };
-
-      //       // Llenar campos del modal
-      //       Object.entries(fieldMap).forEach(([selector, dataAttr]) => {
-      //         const element = modal.querySelector(selector);
-      //         if (element) element.value = this.dataset[dataAttr] || "";
-      //       });
-
-      //       // Mostrar/ocultar motivo
-      //       const motivoSection = modal.querySelector(
-      //         "[data-motivo-container]"
-      //       );
-      //       const toggleVisibility = () => {
-      //         const mostrar =
-      //           modal.querySelector('select[name="tipificacion"]').value ===
-      //           "Sin interes";
-      //         motivoSection.style.gridTemplateColumns = mostrar
-      //           ? "repeat(3, 1fr)"
-      //           : "repeat(2, 1fr)";
-      //         motivoSection.style.display = mostrar ? "block" : "none";
-      //         if (!mostrar) motivoSection.querySelector("select").value = "";
-      //       };
-
-      //       toggleVisibility();
-      //       modal
-      //         .querySelector('select[name="tipificacion"]')
-      //         .addEventListener("change", toggleVisibility);
-
-      //       // Animación para mostrar el modal
-      //       modal.style.display = "flex";
-      //       setTimeout(() => {
-      //         modal.style.opacity = "1";
-      //         modal.querySelector("div").style.transform = "scale(1)";
-      //       }, 10);
-      //     });
-      //   });
-
+      // Manejo del Modal
       document.addEventListener("DOMContentLoaded", function () {
         document
           .querySelectorAll('[data-bs-toggle="modal"]')
           .forEach((button) => {
             button.addEventListener("click", function () {
               const modal = document.getElementById("detalleModal");
-
-              // Mapeo de los campos con sus atributos de data
               const fieldMap = {
                 "#modalIdGestion": "idgestion",
+                'input[name="celular"]': "celular",
                 'input[name="id_llamada"]': "idllamada",
                 'select[name="id_estado"]': "id_estado",
-                'select[name="tipificacion"]': "tipificacion",
+                'select[name="id_tipificacion"]': "id_tipificacion",
                 'select[name="canal"]': "canal",
                 'select[name="tipoGestion"]': "tipogestion",
                 'select[name="motivo_no_interes"]': "motivonoint",
                 'input[name="fecha_proxima_gestion"]': "fechaproxima",
-                'input[name="Descripcion"]': "descripcion",
+                'textarea[name="Descripcion"]': "descripcion",
               };
 
-              // Llenar campos
               Object.entries(fieldMap).forEach(([selector, dataAttr]) => {
                 const element = modal.querySelector(selector);
                 if (element) element.value = this.dataset[dataAttr] || "";
               });
 
-              // Motivo No Interés
               const motivoSelect = modal.querySelector(
                 'select[name="motivo_no_interes"]'
               );
-              const tipificacionSelect = modal.querySelector(
-                'select[name="tipificacion"]'
+              const id_tipificacionSelect = modal.querySelector(
+                'select[name="id_tipificacion"]'
               );
 
-              function toggleMotivo() {
-                if (tipificacionSelect.value === "Sin interes") {
+              const toggleMotivo = () => {
+                if (id_tipificacionSelect.value === "10") {
                   motivoSelect.disabled = false;
                   motivoSelect.style.opacity = "1";
-                  motivoSelect.style.pointerEvents = "auto";
                 } else {
                   motivoSelect.disabled = true;
-                  motivoSelect.style.opacity = "0.5";
-                  motivoSelect.style.pointerEvents = "none";
-                  motivoSelect.value = ""; // Limpiar si no aplica
+                  motivoSelect.value = "";
                 }
-              }
+              };
 
-              // Aplicar lógica inicial y agregar evento de cambio
               toggleMotivo();
-              tipificacionSelect.addEventListener("change", toggleMotivo);
+              id_tipificacionSelect.addEventListener("change", toggleMotivo);
 
-              // Animación modal
               modal.style.display = "flex";
               setTimeout(() => {
                 modal.style.opacity = "1";
-                modal.querySelector("div").style.transform = "scale(1)";
+                modal.querySelector(".modal-content").style.transform =
+                  "scale(1)";
               }, 10);
             });
           });
-      });
 
-      // Cerrar modal
-      document
-        .querySelectorAll('[data-bs-dismiss="modal"]')
-        .forEach((button) => {
-          button.addEventListener("click", () => {
-            const modal = document.getElementById("detalleModal");
-            modal.style.opacity = "0";
-            modal.querySelector("div").style.transform = "scale(0.9)";
-            setTimeout(() => {
-              modal.style.display = "none";
-            }, 300);
+        // Cerrar modal
+        document
+          .querySelectorAll('[data-bs-dismiss="modal"]')
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              const modal = document.getElementById("detalleModal");
+              modal.style.opacity = "0";
+              modal.querySelector(".modal-content").style.transform =
+                "scale(0.9)";
+              setTimeout(() => (modal.style.display = "none"), 300);
+            });
           });
-        });
 
-      // Cerrar modal al hacer click fuera
-      document
-        .getElementById("detalleModal")
-        .addEventListener("click", function (e) {
-          if (e.target === this) {
-            this.style.opacity = "0";
-            this.querySelector("div").style.transform = "scale(0.9)";
-            setTimeout(() => {
-              this.style.display = "none";
-            }, 300);
-          }
-        });
+        // Cerrar al hacer click fuera
+        document
+          .getElementById("detalleModal")
+          .addEventListener("click", function (e) {
+            if (e.target === this) {
+              this.style.opacity = "0";
+              this.querySelector(".modal-content").style.transform =
+                "scale(0.9)";
+              setTimeout(() => (this.style.display = "none"), 300);
+            }
+          });
+      });
     </script>
   </body>
 </html>
