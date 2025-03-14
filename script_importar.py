@@ -11,13 +11,68 @@ app = Flask(__name__)
 app.config["MYSQL_HOST"] = "localhost"  # Servidor de la base de datos
 app.config["MYSQL_USER"] = "root"  # Usuario de MySQL
 app.config["MYSQL_PASSWORD"] = ""  # Contraseña de MySQL
-app.config["MYSQL_DB"] = "Kliiker1"  # Nombre de la base de datos
+app.config["MYSQL_DB"] = "kliiker1"  # Nombre de la base de datos
 app.config["MYSQL_CURSORCLASS"] = (
     "DictCursor"  # Tipo de cursor que retorna resultados como diccionarios
 )
 
 # Inicializar la conexión MySQL
 mysql = MySQL(app)
+
+
+def importar_datos_desde_json():
+    try:
+        with open("kliiker30.json", "r", encoding="utf-8") as file:
+            datos = json.load(file)
+
+        with app.app_context():
+            cursor = mysql.connection.cursor()
+
+            for registro in datos:
+                fecha_original = registro["fecha_de_registro"]
+                try:
+                    fecha_mysql = datetime.strptime(
+                        fecha_original, "%d/%m/%Y"
+                    ).strftime("%Y-%m-%d")
+                except ValueError:
+                    fecha_mysql = None
+
+                id_kliiker = registro.get("id_kliiker") or None
+
+                # Corrected SQL with 8 placeholders
+                cursor.execute(
+                    """
+                    INSERT INTO kliiker (
+                        id_Kliiker, 
+                        nombre, 
+                        apellido, 
+                        celular, 
+                        nivel, 
+                        correo, 
+                        fecha,
+                        venta
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)  # Added 8th %s
+                    """,
+                    (
+                        id_kliiker,
+                        registro["nombres"],
+                        registro["apellidos"],
+                        registro["celular"],
+                        registro["codigo"],
+                        registro["correo_electronico"],
+                        fecha_mysql,
+                        registro["ventas"],
+                    ),
+                )
+
+            mysql.connection.commit()
+            cursor.close()
+            print("Datos importados exitosamente!")
+            return True
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return False
 
 
 def importar_datos_desde_json():
@@ -38,7 +93,7 @@ def importar_datos_desde_json():
             # Iterar sobre cada registro en el archivo JSON
             for registro in datos:
                 # Convertir el formato de fecha de dd/mm/yyyy a yyyy-mm-dd (formato MySQL)
-                fecha_original = registro["fecha"]
+                fecha_original = registro["fecha_de_registro"]
                 try:
                     fecha_mysql = datetime.strptime(
                         fecha_original, "%d/%m/%Y"
@@ -59,17 +114,19 @@ def importar_datos_desde_json():
                         celular, 
                         nivel, 
                         correo, 
-                        fecha
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        fecha,
+                        venta
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         id_kliiker,
-                        registro["nombre"],
-                        registro["apellido"],
+                        registro["nombres"],
+                        registro["apellidos"],
                         registro["celular"],
-                        registro["nivel"],
-                        registro["correo"],
+                        registro["codigo"],
+                        registro["correo_electronico"],
                         fecha_mysql,
+                        registro["ventas"],
                     ),
                 )
 
