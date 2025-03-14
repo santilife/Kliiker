@@ -1,0 +1,293 @@
+@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+
+* {
+  font-family: "Rubik", sans-serif;
+}
+
+/* NAV Y BARRA*/
+body {
+  margin: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.navbar-custom {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 215px;
+  background-color: #f2eaea;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-custom div {
+  display: grid;
+  gap: 15px;
+}
+
+.bi-person-circle {
+  font-size: 70px;
+  color: #5043af;
+  margin: 0;
+}
+
+.navbar-custom ul {
+  list-style: none;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  width: 100%;
+}
+
+.navbar-custom .iconos li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  padding: 5px 0;
+  width: 100%;
+  border-bottom: 2px solid #573bb6;
+  border-radius: 10px;
+  & a {
+    text-decoration: none;
+    color: #000000;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: 0.3s;
+    display: block;
+    width: 100%;
+  }
+}
+
+.user {
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.navbar-custom .icon li:hover {
+  background-color: #e3dbdb;
+}
+
+.navbar-custom .cerrar-icon {
+  transition: all ease 0.6s;
+  border-radius: 10px;
+  margin-top: 20px;
+
+  & a {
+    text-decoration: none;
+    color: #2c3e50;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: 0.3s;
+    /* display: block; */
+    width: 100%;
+  }
+}
+
+.navbar-custom .cerrar-icon:hover {
+  background-color: rgb(216, 144, 144);
+  transition: all ease 0.6s;
+}
+
+.logo-header {
+  width: 80%;
+  margin-bottom: 20px;
+  align-self: center;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  margin: 5 px 0;
+  padding: 5px;
+}
+
+.container {
+  margin-left: 250px; /* Igual al ancho del navbar */
+  padding: 20px;
+  min-height: 100vh;
+
+  /* Barra de búsqueda */
+}
+.search-bar {
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.search-group {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: center;
+}
+
+.search-bar input[type="search"] {
+  width: 20rem;
+  padding: 10px 10px 10px 35px;
+  border: 2px solid #F2EAEA;
+  background-color: #e3dbdb;
+  color: black;
+  font-weight: bolder;
+  border-radius: 25px;
+  outline: none;
+}
+.bi-search {
+  font-size: 1.2rem;
+  left: 30px;
+}
+
+.search-bar img {
+  height: 50px;
+  grid-column: 3;
+  justify-self: end;
+}
+
+/* ---------------------------DOWNLOADBD-------------------------------------- */
+/* Contenedor principal */
+.containerdb {
+  background-color: #f4ebea;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: auto;
+  text-align: center;
+}
+
+/* Botones superiores */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-weight: normal;
+  text-decoration: none;
+  color: black;
+  background-color: white;
+  border: none;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-download {
+  border: 2px solid transparent;
+}
+
+.btn-upload {
+  border: 2px solid transparent;
+}
+
+
+.btn:hover {
+  background-color: #e6e6e6;
+}
+
+.btn i {
+  font-size: 16px;
+}
+
+/* Estilos para la tabla */
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  margin-top: 10px;
+  background: white;
+  border-radius: 12px;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid black;
+}
+
+.file-list thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.file-list thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* Estilos para las últimas celdas del cuerpo */
+.file-list tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.file-list tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.file-list td,
+.file-list th {
+  border: 1px solid #00000071;
+  text-align: center;
+}
+
+th {
+  background-color: #f4ebea;
+  font-weight: bold;
+}
+
+.file-list tr:not(:last-child) td,
+.file-list tr:not(:last-child) th {
+  border-bottom: none;
+}
+
+.file-list td:not(:last-child),
+.file-list th:not(:last-child) {
+  border-right: none;
+}
+
+/* Ícono de descarga */
+.download-icon a {
+  color: black;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.download-icon a:hover {
+  color: #555;
+}
+
+/* ----------------------------------------------------------------- */
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .navbar-custom span,
+  .navbar-custom li a {
+    display: none;
+  }
+
+  .logo-header {
+    width: 90%;
+  }
+}

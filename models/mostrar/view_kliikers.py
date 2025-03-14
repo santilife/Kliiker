@@ -1,13 +1,23 @@
-from flask import render_template, Blueprint, Flask, flash, request, redirect, url_for
+from flask import (
+    render_template,
+    Blueprint,
+    Flask,
+    flash,
+    request,
+    redirect,
+    url_for,
+    session,
+)
 from database.config import mysql
 from datetime import datetime
+from auth.decorators import login_required, role_required
 
 # Blueprint para mostrar las tablas de gestión
 mostrar_tablas = Blueprint("mostrar_tablas", __name__)
 
 
 def obtener_datos_gestion():
-    
+
     # tipificaciones = {
     #     1: "Buzón de voz",
     #     2: "Equivocado",
@@ -21,9 +31,7 @@ def obtener_datos_gestion():
     #     10: "Sin interes",
     #     11: "Volver a llamar",
     # }
-    
-    
-    
+
     try:
         cursor = mysql.connection.cursor()
 
@@ -55,15 +63,15 @@ def obtener_datos_gestion():
             LEFT JOIN gestiones g ON k.celular = g.celular
             LEFT JOIN usuarios u ON g.nombre_AS = u.nombre_AS
             LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
-            LEFT JOIN estadoKliiker e ON k.id_estado = e.id_estado
-            ORDER BY g.fecha DESC
+            LEFT JOIN estadoKliiker e ON g.id_estado = e.id_estado
+            ORDER BY k.nombre ASC
         """
         cursor.execute(consulta)
         datos = cursor.fetchall()
-        print(datos)
         column_names = [column[0] for column in cursor.description]
         # print(datos)
         cursor.close()
+
         return datos
     except Exception as err:
         print(f"Error en obtener_datos_gestion: {str(err)}")
@@ -145,6 +153,7 @@ def total_gestiones():
 
 # Ruta para mostrar las tablas de gestión y historial
 @mostrar_tablas.route("/mostrar_tablas")
+@login_required
 def mostrar_tabla():
     datos_gestion = obtener_datos_gestion()
     datos_historial = obtener_datos_historial()

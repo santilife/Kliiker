@@ -4,27 +4,6 @@
   font-family: "Rubik", sans-serif;
 }
 
-/* Estilos generales */
-/* body {
-  margin: 0;
-  background-color: #f5f5f5;
-  min-height: 100vh;
-  display: grid;
-  grid-template-areas: "navbar main";
-  grid-template-columns: 250px 1fr;
-  grid-template-rows: 1fr;
-} */
-
-/* Navbar izquierda */
-/* .navbar-custom {
-  grid-area: navbar;
-  background-color: #f2eaea;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-} */
 body {
   margin: 0;
   background-color: #f5f5f5;
@@ -129,36 +108,6 @@ body {
   padding: 5px;
 }
 
-/* Contenido principal */
-/* .container {
-  grid-area: main;
-  padding: 20px;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-} */
-
-/* .container {
-  margin-left: 250px; 
-  padding: 20px;
-  min-height: 100vh;
-
-  & .totales{
-    display: flex;
-  }
-
-} */
-
-
-
-
-input[type ="date"] {
-    background-color: #f8f8f8;
-    margin: 10px;
-}
-
-
-
-
 .select-wrapper {
   position: relative;
 }
@@ -172,7 +121,6 @@ input[type ="date"] {
   pointer-events: none;
 }
 
-
 .container {
   display: flex;
   flex-direction: column;
@@ -181,30 +129,134 @@ input[type ="date"] {
   background-color: #f8f8f8;
   margin-left: 250px;
 
-  & .totales{
-    display: flex;
+  & .totales {
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+
+    & .totales-individuales {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
   }
 }
 
-.seccion-estadisticas {
-  display: flex;
-  justify-content: center;
+/* Contenedor principal de tarjetas */
+.totales {
+  display: grid;
+  gap: 10px;
 }
 
+/* Sección de ventas principales */
+.tarjeta-individual {
+  border-radius: 12px;
+  padding: 10px;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  transition: transform 0.2s;
+  background-color: #38a86f;
+  width: 15em;
+  height: 8.25em;
+  border: solid 2px #198f51;
+  margin: 10px;
+}
+.tarjeta-individual:hover {
+  transform: translateY(-3px);
+}
+
+/* Estilos específicos para ventas */
+.tarjeta-container-ventas {
+  display: flex;
+  flex-direction: column;
+}
+
+.total-ventas h4 {
+  color: white;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.total-ventas p {
+  color: white;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ------------------------- Sección de estadísticas ------------------------ */
+.stats {
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
+  & .totales-codigo {
+    display: grid;
+    /* grid-template-columns: repeat(5, minmax(150px, 1fr)); */
+    grid-template-columns: 2fr 3fr;
+    gap: 0px;
+    padding: 0px;
+    & .codigo-container {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+      gap: 0px;
+      padding: 0px;
+      align-items: center;
+      & img {
+        height: 50px;
+        grid-column: 3;
+        justify-self: center;
+      }
+    }
+  }
+
+  & .llamadas-estados {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 0px;
+    padding: 0px;
+  }
+}
+
+.tarjeta-individual2 {
+  margin: 10px;
+}
+
+.tarjeta-estadistica {
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  height: 3em;
+}
+
+.tarjeta-estadistica h4 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  font-weight: bolder;
+}
+
+.tarjeta-estadistica p {
+  color: #7f8c8d;
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+}
 
 /* filtros */
 .filtros {
-  background-color: #F2EAEA;
+  background-color: #f2eaea;
   padding: 15px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
-  /* & .contenido{
-    display: flex;
-    text-align: center;
-  } */
+  position: relative;
+}
+
+.contenido {
+  border-radius: 10px;
+  border: 1px solid;
 }
 
 .filtro2 {
@@ -214,24 +266,33 @@ input[type ="date"] {
   flex-wrap: wrap;
 }
 
-.filtro2 label,
-.filtro2 span {
+.filtro2 .form-label {
   font-size: 15px;
   color: #333;
   font-weight: 600;
   align-items: center;
+  background-color: #978ce8;
+  margin-bottom: 0;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 .filtro2 input[type="date"],
 .filtro2 .select {
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid #F2EAEA;
-  background-color: white;
+  border: none;
+  /* background-color: #e3dbdb; */
   font-size: 15px;
   color: #333;
   outline: none;
   transition: all 0.3s ease;
+  margin-top: 0;
+}
+
+.select,
+.date {
+  background-color: #f2eaea;
 }
 
 .filtro2 .select:hover,
@@ -243,20 +304,84 @@ input[type ="date"] {
   cursor: pointer;
 }
 
-.contenido{
+.contenido {
   display: grid;
   align-items: center;
   justify-content: center;
   gap: 5px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  body {
-    grid-template-columns: 200px 1fr;
-  }
+/* --------------------------------- charts --------------------------------- */
+
+.chart-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+.chart {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+/* abajo */
+
+/* Cada sección individual */
+.seccion-estadisticasAbajo {
+  flex: 0 0 auto;
+  min-width: 200px;
+  display: flex;
 }
 
+/* Contenedor interno de tarjetas */
+.tarjetas-containerAbajo {
+  display: flex;
+  gap: 15px;
+  flex-direction: row;
+}
+
+/* Estilo de tarjetas */
+.tarjeta-estadisticaAbajo {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 15em;
+  height: 3em;
+}
+
+.tarjeta-estadisticaAbajo h4 {
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  font-weight: bolder;
+}
+
+.tarjeta-estadisticaAbajo p {
+  color: #7f8c8d;
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.containerC {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .seccion-estadisticasAbajo {
+    width: 100%;
+    min-width: auto;
+  }
+}
 @media (max-width: 480px) {
   body {
     grid-template-columns: 60px 1fr;
@@ -269,5 +394,23 @@ input[type ="date"] {
 
   .logo-header {
     width: 90%;
+  }
+}
+/* Responsive design */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 200px 1fr;
+  }
+  .totales-individuales,
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .total-compras p {
+    font-size: 2em;
+  }
+
+  .tarjeta-estadistica {
+    flex-basis: 100%;
   }
 }

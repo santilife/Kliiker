@@ -7,17 +7,19 @@ import MySQLdb
 
 estadisticas_bp = Blueprint("estadisticas", __name__)
 
+
 def obtener_datos_estadisticas():
     try:
         connection = mysql.connection
-        cursor = connection.cursor()
+        # cursor = connection.cursor()
         cursor = connection.cursor(MySQLdb.cursors.DictCursor)
         # Consulta para estados
         cursor.execute(
             """
-            SELECT id_estado, COUNT(*) as cantidadEstados
-            FROM kliiker 
-            GROUP BY id_estado
+            SELECT e.estado, COUNT(*) as cantidadEstados
+            FROM gestiones g
+            JOIN estadoKliiker e ON g.id_estado = e.id_estado 
+            GROUP BY e.estado
         """
         )
         datos_estados = cursor.fetchall()
@@ -25,9 +27,10 @@ def obtener_datos_estadisticas():
         # Consulta para tipificaciones
         cursor.execute(
             """
-            SELECT id_tipificacion, COUNT(*) as cantidadTipificaciones
-            FROM gestiones 
-            GROUP BY id_tipificacion
+            SELECT t.tipificacion, COUNT(*) as cantidadTipificaciones
+            FROM gestiones g
+            JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
+            GROUP BY t.tipificacion
         """
         )
         datos_tipificaciones = cursor.fetchall()
@@ -54,6 +57,28 @@ def obtener_datos_estadisticas():
         )
         datos_venta = cursor.fetchall()
 
+        # Consulta RPC
+        cursor.execute(
+            """
+            SELECT t.rpc, COUNT(*) as cantidadRPC
+            FROM gestiones g
+            JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
+            GROUP BY t.rpc
+        """
+        )
+        datos_rpc = cursor.fetchall()
+
+        # Consulta Contactabilidad
+        cursor.execute(
+            """
+            SELECT t.contactabilidad, COUNT(*) as cantidadContac
+            FROM gestiones g
+            JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
+            GROUP BY t.contactabilidad
+        """
+        )
+        datos_contactabilidad = cursor.fetchall()
+
         # Consulta total
         cursor.execute(
             """
@@ -63,17 +88,20 @@ def obtener_datos_estadisticas():
         )
         datos_total = cursor.fetchall()
 
-        print(datos_total)
-        print(datos_venta)
-        print(datos_codigo)
-        print(datos_estados)
-        print(datos_tipificaciones)
+        # print(datos_total)
+        # print(datos_venta)
+        # print(datos_codigo)
+        # print(datos_estados)
+        # print(datos_tipificaciones)
+        print(datos_rpc)
+        print(datos_contactabilidad)
 
         cursor.close()
 
         return {
             "estados": datos_estados,
             "tipificaciones": datos_tipificaciones,
+            "rpc": datos_rpc,
             "codigos": datos_codigo,
             "ventas": datos_venta,
             "total_kliikers": datos_total,

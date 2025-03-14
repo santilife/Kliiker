@@ -17,10 +17,10 @@
       <div class="iconos">
         <ul>
           <span class="user">
-            <i class="bi bi-person-circle"></i><br>
+            <i class="bi bi-person-circle"></i><br />
             Hola {{session["usuario"]}} ({{session["rol"]}})
           </span>
-          
+
           {% if session['rol'] == 'Administrador' %}
           <div class="icon">
             <li>
@@ -30,7 +30,7 @@
             </li>
           </div>
           {% endif %}
-          
+
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
@@ -38,7 +38,7 @@
               </a>
             </li>
           </div>
-  
+
           {% if session['rol'] == 'Administrador' %}
           <div class="icon">
             <li>
@@ -47,7 +47,7 @@
               </a>
             </li>
           </div>
-  
+
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
@@ -58,7 +58,7 @@
           {% endif %}
         </ul>
       </div>
-  
+
       <div class="cerrar-icon">
         <a href="{{ url_for('auth.logout') }}">
           <i class="bi bi-arrow-right-circle"></i>
@@ -136,6 +136,7 @@
                   data-fechaproxima="{{ fila.fecha_proxima_gestion }}"
                   data-descripcion="{{ fila.comentario }}"
                   data-tipogestion="{{ fila.tipoGestion }}"
+                  data-asesor="{{ session.get['nombre_AS'] }}"
                   class="muslo"
                 >
                   {{ fila.nombre }}
@@ -143,7 +144,7 @@
               </td>
               <td>{{ fila.apellido }}</td>
               <td>{{ fila.celular }}</td>
-              <td>{{ 'Sí' if fila.nivel else 'No'}}</td>
+              <td>{{ 'Sí' if fila.codigo else 'No'}}</td>
               <td>{{ fila.idKliiker }}</td>
               <td>{{ fila.tipificacion }}</td>
               <td>
@@ -205,9 +206,25 @@
             method="POST"
             action="{{ url_for('actualizar_gestion_modal.actualizar_gestion')}}"
           >
-            <input type="hidden" name="celular" id="celular" value="{{ datos.celular }}" />
+            <input
+              type="hidden"
+              name="nombre_AS"
+              id="nombre_AS"
+              value="{{ session['nombre_AS'] }}"
+            />
+            <input
+              type="hidden"
+              name="celular"
+              id="celular"
+              value="{{ datos.celular }}"
+            />
             <div class="form-group">
-              <input type="hidden" name="id_gestion" id="modalIdGestion" value="{{ datos.idGestion }}"  />
+              <input
+                type="hidden"
+                name="id_gestion"
+                id="modalIdGestion"
+                value="{{ datos.idGestion }}"
+              />
             </div>
 
             <div class="form-group id_llamada">
@@ -257,7 +274,11 @@
               <div class="form-group" data-motivo-container id="motivo">
                 <label class="form-label">Motivo no interés</label>
                 <div class="select-wrapper">
-                  <select class="form-control" name="motivo_no_interes" disabled>
+                  <select
+                    class="form-control"
+                    name="motivo_no_interes"
+                    disabled
+                  >
                     <option value="">Seleccione</option>
                     <option value="Consiguió trabajo">Consiguió trabajo</option>
                     <option value="Precio alto">Precio alto</option>
@@ -365,6 +386,7 @@
               const modal = document.getElementById("detalleModal");
               const fieldMap = {
                 "#modalIdGestion": "idgestion",
+                'input[name="nombre_AS"]': "asesor",
                 'input[name="celular"]': "celular",
                 'input[name="id_llamada"]': "idllamada",
                 'select[name="id_estado"]': "id_estado",

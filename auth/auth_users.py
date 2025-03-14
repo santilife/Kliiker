@@ -10,13 +10,14 @@ from flask import (
     session,
     Response,
     jsonify,
+    flash,
 )
 from datetime import datetime
 from models.mostrar.view_kliikers import mostrar_tabla
 from database.config import mysql
 from werkzeug.security import check_password_hash
 from auth.decorators import login_required, role_required
-from models.descargarDB.downloadDB import download, upload
+from models.descargarDB.downloadDB import handle_download, handle_upload
 
 # -------------------------- Inicialización de Flask ------------------------- #
 app = Flask(__name__)
@@ -77,13 +78,17 @@ def downloadDB():
 # Ruta para subir los archivos .csv
 @administradores.route("/admin/uploadDB", methods=["POST"])
 def handle_upload():
-    return upload()
+    return handle_upload()
 
 
 # Ruta para descargar los archivos .csv
 @administradores.route("/admin/download")
-def handle_download(db_id):
-    return download(db_id)
+def handle_download():
+    id_db = request.args.get("id_db", type=int)
+    if not id_db:
+        flash("ID no proporcionado", "danger")
+        return redirect(url_for("administradores.downloadDB"))
+    return handle_download(id_db)
 
 
 # ---------------------------- Panel de Asesores ---------------------------- #
@@ -124,12 +129,13 @@ def acceso():
         )
         user = cur.fetchone()
         cur.close()
-
+        print(user)
         # Si el usuario existe, establece la sesión
         if user:
             session["logueado"] = True
             session["usuario"] = user["usuario"]
             session["rol"] = user["rol"]
+            session["nombre_AS"] = user["nombre_AS"]
 
             # Redirección según el rol
             if user["rol"] == "Administrador":

@@ -1,54 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Subir y Descargar CSV</title>
-    <!-- Bootstrap CSS (opcional, para estilos) -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- FontAwesome (para el ícono de descarga) -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .file-list {
-        margin-top: 20px;
-      }
-      .file-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-        margin-bottom: 10px;
-        border-radius: 5px;
-      }
-      .file-item:hover {
-        background-color: #f9f9f9;
-      }
-      .download-btn {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-      .download-btn:hover {
-        background-color: #218838;
-      }
-    </style>
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+  />
+  <link rel="stylesheet" href="../static/css/download.css" />
   </head>
   <body>
+    <div class="navbar-custom" id="navbar">
+      <div class="iconos">
+        <ul>
+          <span class="user">
+            <i class="bi bi-person-circle"></i><br>
+            Hola {{session["usuario"]}} ({{session["rol"]}})
+          </span>
+          
+          {% if session['rol'] == 'Administrador' %}
+          <div class="icon">
+            <li>
+              <a href="{{url_for('estadisticas.mostrar_graficos')}}">
+                <i class="bi bi-bar-chart"></i>Estadísticas
+              </a>
+            </li>
+          </div>
+          {% endif %}
+          
+          <div class="icon">
+            <li>
+              <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
+                <i class="bi bi-folder2"></i>Gestión
+              </a>
+            </li>
+          </div>
+  
+          {% if session['rol'] == 'Administrador' %}
+          <div class="icon">
+            <li>
+              <a href="{{url_for('administradores.downloadDB')}}">
+                <i class="bi bi-file-earmark-text"></i>Administrativo
+              </a>
+            </li>
+          </div>
+  
+          <div class="icon">
+            <li>
+              <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
+                <i class="bi bi-person"></i>Asesor
+              </a>
+            </li>
+          </div>
+          {% endif %}
+        </ul>
+      </div>
+  
+      <div class="cerrar-icon">
+        <a href="{{ url_for('auth.logout') }}">
+          <i class="bi bi-arrow-right-circle"></i>
+          Cerrar sesión
+        </a>
+      </div>
+      <img
+        src="../../static/img/Kliiker-Logo.png"
+        alt="Logo Kliiker"
+        class="logo-header"
+      />
+    </div>
+
     <div class="container">
-      <h1 class="my-4">Subir y Descargar CSV</h1>
+      <!-- Barra de búsqueda -->
+      <div class="search-bar" id="search-bar">
+        <div class="search-group">
+          <i class="bi bi-search"></i>
+          <input type="search" id="searchInput" placeholder="Buscar..." />
+        </div>
+        <img src="../../static/img/AndesBPO-Logo.png" alt="Logo Andes" />
+      </div>
+
+    <!-- <div class="containerdb">
+      <h1 class="my-4">Subir y Descargar CSV</h1> -->
 
       <!-- Formulario para subir archivos CSV -->
-      <form
+      <!-- <form
         action="/admin/uploadDB"
         method="POST"
         enctype="multipart/form-data"
@@ -66,10 +101,10 @@
           />
         </div>
         <button type="submit" class="btn btn-primary">Subir CSV</button>
-      </form>
+      </form> -->
 
       <!-- Lista de archivos CSV subidos -->
-      <div class="file-list">
+      <!-- <div class="file-list">
         <h2>Archivos CSV Subidos</h2>
         {% if databases %} {% for db in databases %}
         <div class="file-item">
@@ -85,9 +120,68 @@
         <p>No hay archivos CSV subidos.</p>
         {% endif %}
       </div>
-    </div>
+    </div> -->
+    <div class="containerdb">
+      <!-- Botones superiores -->
+      <div class="button-group">
+          <button class="btn btn-download">
+              <!-- <i class="fas fa-cloud-download-alt"></i>  -->
+              Descargar tarea del día
+          </button>
+          <button class="btn btn-upload" onclick="document.getElementById('file').click();">
+              <!-- <i class="fas fa-cloud-upload-alt"></i> -->
+               Cargar base de datos
+          </button>
+      </div>
+      <div class="button-group">
+          <button class="btn btn-downloadGestion">
+            <!-- <i class="fas fa-cloud-downloadGestion-alt"><i>  -->
+              Descargar Gestion
+          </button>
+          <button class="btn btn-downloadHistorial">
+            <!-- <i  class="fas fa-cloud-downloadHistorial-alt"><i>  -->
+              Descargar Historial
+          </button>
+      </div>
+  
+  
+      <!-- <h1 class="my-4">Subir y Descargar CSV</h1> -->
+  
+      <!-- Formulario para subir archivos CSV -->
+      <form id="uploadForm" action="/admin/uploadDB" method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+            <input type="file" class="form-control" id="file" name="file" accept=".csv" style="display: none;" onchange="document.getElementById('uploadForm').submit();" />
+        </div>
+    </form>
 
-    <!-- Bootstrap JS (opcional, para funcionalidades de Bootstrap) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- Tabla de archivos CSV subidos -->
+      <div class="file-list">
+          <h2>Archivos CSV Subidos</h2>
+          {% if databases %}
+          <table>
+              <thead>
+                  <tr>
+                      <th>Nombre</th>
+                      <th>Fecha</th>
+                      <!-- <th>Descargar</th> -->
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for db in databases %}
+                  <tr>
+                      <td>{{ db.nombre }}</td>
+                      <td>{{ db.date_upload }}</td>
+                      <!-- <td class="download-icon">
+                          <a class="bi bi-download" href="{{ url_for('administradores.handle_download', id_db=db.id_db) }}"></a>
+                      </td> -->
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          {% else %}
+          <p>No hay archivos CSV subidos.</p>
+          {% endif %}
+      </div>
+  </div>
   </body>
 </html>

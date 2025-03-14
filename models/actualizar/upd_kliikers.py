@@ -1,4 +1,13 @@
-from flask import Blueprint, Flask, render_template, url_for, request, redirect, flash
+from flask import (
+    Blueprint,
+    Flask,
+    render_template,
+    url_for,
+    request,
+    redirect,
+    flash,
+    session,
+)
 from database.config import mysql
 import MySQLdb
 from datetime import datetime
@@ -52,7 +61,7 @@ def actualizar_gestion():
 
         # Preparación de datos para la actualización
         id_tipificacion = int(request.form["id_tipificacion"])
-        
+
         datos = {
             "id_gestion": request.form["id_gestion"],
             "id_llamada": request.form["id_llamada"],
@@ -63,7 +72,9 @@ def actualizar_gestion():
             "tipoGestion": request.form["tipoGestion"],
             "fecha_gestion_actual": datetime.now(),
             "fecha_proxima_gestion": (
-                datetime.strptime(request.form["fecha_proxima_gestion"], "%Y-%m-%d").date()
+                datetime.strptime(
+                    request.form["fecha_proxima_gestion"], "%Y-%m-%d"
+                ).date()
                 if request.form["fecha_proxima_gestion"]
                 else None
             ),
@@ -73,13 +84,20 @@ def actualizar_gestion():
                 if tipificaciones[id_tipificacion] == "Sin interes"
                 else None
             ),
+            "asesor": session.get("nombre_AS"),
         }
 
         print("Datos procesados:", datos)
 
         # Validación específica para tipificación "Sin interes"
-        if tipificaciones[id_tipificacion] == "Sin interes" and not datos["motivoNoInteres"]:
-            flash("Debe seleccionar un motivo cuando la tipificación es 'Sin interés'", "danger")
+        if (
+            tipificaciones[id_tipificacion] == "Sin interes"
+            and not datos["motivoNoInteres"]
+        ):
+            flash(
+                "Debe seleccionar un motivo cuando la tipificación es 'Sin interés'",
+                "danger",
+            )
             return redirect(url_for("mostrar_tablas.mostrar_tabla"))
 
         if datos["id_gestion"] == "None":
@@ -96,19 +114,21 @@ def actualizar_gestion():
                     tipoGestion = %s,
                     motivoNoInteres = %s,
                     fechaProximaGestion = %s,
-                    comentario = %s
+                    comentario = %s,
+                    nombre_AS = %s
                 """
                 parametros = (
                     datos["id_llamada"],
                     datos["id_estado"],
                     datos["celular"],
                     datos["fecha_gestion_actual"],
-                    datos["id_tipificacion"],   
+                    datos["id_tipificacion"],
                     datos["canal"],
                     datos["tipoGestion"],
                     datos["motivoNoInteres"],
                     datos["fecha_proxima_gestion"],
                     datos["comentario"],
+                    datos["asesor"],
                 )
                 print("\nConsulta SQL:", cursor.mogrify(consulta, parametros))
                 cursor.execute(consulta, parametros)
@@ -137,7 +157,8 @@ def actualizar_gestion():
                     tipoGestion = %s,
                     motivoNoInteres = %s,
                     fechaProximaGestion = %s,
-                    comentario = %s
+                    comentario = %s,
+                    nombre_AS = %s
                 WHERE id_gestion = %s
                 """
                 parametros = (
@@ -150,6 +171,7 @@ def actualizar_gestion():
                     datos["motivoNoInteres"],
                     datos["fecha_proxima_gestion"],
                     datos["comentario"],
+                    datos["asesor"],
                     datos["id_gestion"],
                 )
 
