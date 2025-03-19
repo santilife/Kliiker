@@ -157,6 +157,7 @@
             {% endfor %}
           </tbody>
         </table>
+        {{ paginacion_gestion.links.replace('?page=', '?page_gestion=')|safe }}
       </div>
 
       <!-- Tabla de historial -->
@@ -193,6 +194,8 @@
             {% endfor %}
           </tbody>
         </table>
+        {{ paginacion_historial.links.replace('?page=', '?page_historial=')|safe
+        }}
       </div>
 
       <!-- Modal -->

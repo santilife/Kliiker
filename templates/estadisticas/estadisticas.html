@@ -60,7 +60,7 @@
 
       <div class="cerrar-icon">
         <a href="{{ url_for('auth.logout') }}">
-          <i class="bi bi-arrow-right-circle"></i>Cerrar sesión
+          <i class="bi bi-arrow-right-circle"></i> Cerrar sesión
         </a>
       </div>
       <img
@@ -70,59 +70,116 @@
       />
     </div>
 
-    <!-- Contenedor de las estadisticas -->
+    <!-- Contenedor principal -->
     <div class="container">
+      <!-- Sección de totales -->
       <div class="totales">
         <section class="totales-individuales">
           {% for ventas in datos.ventas %}
-
           <div class="total-ventas tarjeta-individual">
             <div class="tarjeta-container-ventas">
-              <div class="total-ventas">
-                <h4>Ventas</h4>
-                <p>{{ ventas.ventasExitosas }}</p>
+              <h4>Ventas</h4>
+              <p>{{ ventas.ventasExitosas }}</p>
+            </div>
+          </div>
+          {% endfor %} {% for cantidad in datos.gestionesTotales %}
+          <!-- Iteramos sobre la lista de un elemento -->
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica1">
+                <h4>Gestiones Totales</h4>
+                <p>{{ cantidad.gestionesTotales }}</p>
+                <!-- Acceso directo al número -->
               </div>
             </div>
           </div>
           {% endfor %}
-        </section>
-
-        <section class="stats">
-          <div class="totales-codigo">
-            <div class="total-container">
-              {% for total in datos.total_kliikers%}
-              <div class="total-kliikers tarjeta-individual2">
-                <div class="tarjetas-container">
-                  <div class="tarjeta-estadistica">
-                    <h4>Total</h4>
-                    <p>{{ total.total }}</p>
-                  </div>
-                </div>
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Gestionables</h4>
+                <p>15</p>
               </div>
-              {% endfor %}
             </div>
+          </div>
+          {% for gestionados in datos.gestionados %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Gestionados</h4>
+                <p>{{ gestionados.cantidadGestionados }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% for singestion in datos.sinGestion %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Sin Gestion</h4>
+                <p>{{ singestion.cantidadSinGestion }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% for codigo in datos.codigos %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>{{ 'Con codigo' if codigo.nivel else 'Sin codigo' }}</h4>
+                <p>{{ codigo.cantidadCodigos }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          <!-- {% for singestion in datos.sinGestion %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Codigo Andes</h4>
+                <p>0</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %} -->
+        </section>
+      </div>
 
-            <div class="codigo-container">
-              {% for codigo in datos.codigos %}
-              <div class="total-kliikers tarjeta-individual2">
-                <div class="tarjetas-container">
-                  <div class="tarjeta-estadistica">
-                    <h4>
-                      {{ 'Con codigo' if codigo.nivel else 'Sin codigo' }}
-                    </h4>
-                    <p>{{ codigo.cantidadCodigos }}</p>
-                  </div>
+      <!-- Sección de estadísticas y filtros -->
+      <section class="stats-filtros">
+        <!-- Estadísticas principales -->
+        <section class="stats">
+          <div class="total-container">
+            {% for total in datos.total_kliikers%}
+            <div class="total-kliikers tarjeta-individual2">
+              <div class="tarjetas-container">
+                <div class="tarjeta-estadistica-kliikers">
+                  <h4>Total Kliikers</h4>
+                  <p>{{ total.total }}</p>
                 </div>
               </div>
-              {% endfor %}
-              <img src="/static/img/AndesBPO-Logo.png" alt="Logo de AndesBPO" />
+            </div>
+            {% endfor %} {% for sininteres in datos.sinInteres %}
+            <div class="tarjeta-individual2">
+              <div class="tarjetas-container">
+                <div class="tarjeta-estadistica">
+                  <h4>Sin interes</h4>
+                  <p>{{ sininteres.cantSinInteres }}</p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
+            <div class="logo-container">
+              <img
+                src="/static/img/AndesBPO-Logo.png"
+                alt="Logo de AndesBPO"
+                class="logo-header"
+              />
             </div>
           </div>
 
-          <!-- Estadísticas y Fechas -->
           <div class="llamadas-estados">
             {% for estado in datos.estados %}
-            <div class="total-kliikers tarjeta-individual2">
+            <div class="tarjeta-individual2">
               <div class="tarjetas-container">
                 <div class="tarjeta-estadistica">
                   <h4>Llamada {{ estado.id_estado }}</h4>
@@ -132,17 +189,11 @@
             </div>
             {% endfor %}
 
-            <div class="total-kliikers tarjeta-individual2">
+            <div class="tarjeta-individual2">
               <div class="tarjetas-container">
-                <!-- {% for flujoCerrado in datos.flujoCerrad %}
-                <div class="tarjeta-estadistica">
-                  <h4>Flujo cerrado</h4>
-                  <p>{{ estado.cantidadEstados }}</p>
-                </div>
-                {% endfor %} -->
                 {% for total in datos.total_kliikers%}
                 <div class="tarjeta-estadistica">
-                  <h4>Flujo Cerrado (by the moment)</h4>
+                  <h4>Flujo Cerrado</h4>
                   <p>{{ total.total }}</p>
                 </div>
                 {% endfor %}
@@ -150,116 +201,92 @@
             </div>
           </div>
         </section>
-      </div>
-      <!-- Mostrar compras -->
 
-      <!-- ---------------------------------------------------------------------------------------------------- -->
-
-      <!-- Filtros -->
-      <div class="filtros">
-        <div class="filtro2">
-          <div class="contenido">
-            <label class="form-label">Fecha inicio</label>
-            <input type="date" class="form-control date" name="fecha_inicio" />
-          </div>
-
-          <div class="contenido">
-            <label class="form-label">Fecha final</label>
-            <input type="date" class="form-control date" name="fecha_final" />
-          </div>
-
-          <div class="contenido">
-            <label class="form-label">Nivel</label>
-            <select class="select">
-              <option>Seleccione</option>
-              <option>Con codigo</option>
-              <option>Sin codigo</option>
-              <option>Todos</option>
-            </select>
-          </div>
-
-          <div class="contenido">
-            <label class="form-label">Estado</label>
-            <select class="select">
-              <option>Seleccione</option>
-              <option>Llamada 1</option>
-              <option>Llamada 2</option>
-              <option>Llamada 3</option>
-              <option>Llamada 4</option>
-              <option>Descartados</option>
-              <option>Nuevos</option>
-            </select>
-          </div>
-
-          <div class="contenido">
-            <label class="form-label">Tipificaciones</label>
-            <select class="select">
-              <option>Seleccione</option>
-              <option value="1">Buzón de voz</option>
-              <option value="2">Equivocado</option>
-              <option value="3">Información general</option>
-              <option value="4">Interesado a futuro</option>
-              <option value="5">Leed ya compro</option>
-              <option value="6">No contesta</option>
-              <option value="7">Novedad en el registro</option>
-              <option value="8">Registro exitoso</option>
-              <option value="9">Seguimiento</option>
-              <option value="10">Sin interes</option>
-              <option value="11">Volver a llamar</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- --------------------GRAFICAAAAAAAAS------------------------------------------------------------------------------------------- -->
-      <div class="chart-container">
-        <div id="graficoBarras" class="chart"></div>
-        <div id="graficoAnillo" class="chart"></div>
-      </div>
-
-      <!-- ----------------abajoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo---------------------------------- -->
-
-      <!-- Contactabilidad -->
-      <div class="containerC">
-        <div class="seccion-estadisticasAbajo">
-          <div class="tarjetas-containerAbajo">
-            {% for total in datos.total_kliikers %}
-            <div class="tarjeta-estadisticaAbajo">
-              <h4>Contactabilidad {{ total.total }}</h4>
-              <p>Total {{ total.total }}</p>
+        <!-- Filtros -->
+        <div class="filtros">
+          <div class="filtro2">
+            <div class="contenido">
+              <label class="form-label">Fecha inicio</label>
+              <input
+                type="date"
+                class="form-control date"
+                name="fecha_inicio"
+              />
             </div>
-            {% endfor %}
-          </div>
-        </div>
 
-        <!-- RPC -->
-        <div class="seccion-estadisticasAbajo">
-          <div class="tarjetas-containerAbajo">
-            {% for total in datos.total_kliikers %}
-            <div class="tarjeta-estadisticaAbajo">
-              <h4>RPC</h4>
-              <p>Total {{ total.total }}</p>
+            <div class="contenido">
+              <label class="form-label">Fecha final</label>
+              <input type="date" class="form-control date" name="fecha_final" />
             </div>
-            {% endfor %}
+
+            <div class="contenido">
+              <label class="form-label">Nivel</label>
+              <select class="select">
+                <option value="">Todos</option>
+                <option value="1">Con codigo</option>
+                <option value="2">Sin codigo</option>
+                <!-- <option>Todos</option> -->
+              </select>
+            </div>
+
+            <div class="contenido">
+              <label class="form-label">Estado</label>
+              <select class="select">
+                <option>Seleccione</option>
+                <option value="1">Llamada 1</option>
+                <option value="2">Llamada 2</option>
+                <option value="3">Llamada 3</option>
+                <option value="4">Llamada 4</option>
+                <!-- <option>Descartados</option>
+                <option>Nuevos</option> -->
+              </select>
+            </div>
+
+            <div class="contenido">
+              <label class="form-label">Tipificaciones</label>
+              <select class="select">
+                <option>Seleccione</option>
+                <option value="1">Buzón de voz</option>
+                <option value="2">Equivocado</option>
+                <option value="3">Información general</option>
+                <option value="4">Interesado a futuro</option>
+                <option value="5">Leed ya compro</option>
+                <option value="6">No contesta</option>
+                <option value="7">Novedad en el registro</option>
+                <option value="8">Registro exitoso</option>
+                <option value="9">Seguimiento</option>
+                <option value="10">Sin interes</option>
+                <option value="11">Volver a llamar</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Conversión -->
-        <div class="seccion-estadisticasAbajo">
-          <div class="tarjetas-containerAbajo">
-            {% for total in datos.total_kliikers %}
+        <!-- Gráficos -->
+        <div class="chart-container">
+          <div id="graficoAnillo" class="chart"></div>
+          <div id="graficoBarras" class="chart"></div>
+        </div>
+
+        <!-- Estadísticas inferiores -->
+        <div class="containerC">
+          <div class="seccion-estadisticasAbajo">
+            {% for contac in datos.contactabilidad %}
+            <div class="tarjeta-estadisticaAbajo">
+              <h4>Contactabilidad {{ contac.contactabilidad }}</h4>
+              <p>Total {{ contac.cantidadContac }}</p>
+            </div>
+            {% endfor %} {% for RPC in datos.rpc %}
+            <div class="tarjeta-estadisticaAbajo">
+              <h4>RPC {{RPC.rpc}}</h4>
+              <p>Total {{ RPC.cantidadRPC }}</p>
+            </div>
+            {% endfor %} {% for total in datos.total_kliikers %}
             <div class="tarjeta-estadisticaAbajo">
               <h4>Conversión {{ total.total }}</h4>
               <p>Total {{ total.total }}</p>
             </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Efectividad -->
-        <div class="seccion-estadisticasAbajo">
-          <div class="tarjetas-containerAbajo">
-            {% for total in datos.total_kliikers %}
+            {% endfor %} {% for total in datos.total_kliikers %}
             <div class="tarjeta-estadisticaAbajo">
               <h4>Efectividad {{ total.total }}</h4>
               <p>Total{{ total.total }}</p>
@@ -267,9 +294,11 @@
             {% endfor %}
           </div>
         </div>
-      </div>
+      </section>
     </div>
+
     <script>
+      // Scripts originales aquí...
       function actualizarGraficos() {
         fetch("/datos_estadisticas")
           .then((response) => response.json())
@@ -277,6 +306,7 @@
             // Actualizar gráfico de barras horizontales
             let estados = data.estados;
             console.log(estados);
+            // Dentro de la configuración del gráfico de barras:
             Plotly.react(
               "graficoBarras",
               [
@@ -284,22 +314,33 @@
                   type: "bar",
                   x: estados.map((item) => item.cantidadEstados),
                   y: estados.map((item) => item.estado),
-                  hoverinfo: "label+percent+value+name",
                   orientation: "h",
                   marker: {
-                    colors: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+                    color: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"], // Mismos colores que el pie
+                    line: {
+                      color: "rgba(0,0,0,0.3)", // Borde sutil para definición
+                      width: 1,
+                    },
                   },
-                  text: data.estados.map(
-                    (item) => `${item.estado}: ${item.cantidadEstados}`
-                  ),
-                  textposition: "auto",
-                  hoverinfo: "none", // Desactivar tooltip por defecto
+                  width: 0.25, // Controla el grosor de las barras (0.5-0.8 recomendado)
                   hovertemplate: "<b>%{y}</b><br>Cantidad: %{x}<extra></extra>",
                 },
               ],
               {
                 title: "Estados de Gestión",
-                margin: { l: 150 },
+                margin: { l: 150, r: 20, t: 90, b: 90 }, // Ajuste de márgenes
+                plot_bgcolor: "rgba(0,0,0,0)", // Fondo transparente
+                paper_bgcolor: "rgba(0,0,0,0)",
+                xaxis: {
+                  showgrid: true,
+                  gridcolor: "rgba(200,200,200,0.3)", // Líneas de guía sutiles
+                  zeroline: false,
+                },
+                yaxis: {
+                  tickfont: {
+                    size: 12, // Tamaño de letra para etiquetas Y
+                  },
+                },
               }
             );
 
@@ -315,7 +356,7 @@
                   ),
                   labels: tipificaciones.map((item) => item.tipificacion),
                   hoverinfo: "label+percent+value+name",
-                  hole: 0.4,
+                  hole: 0.78,
                   type: "pie",
                   marker: {
                     colors: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
@@ -330,22 +371,47 @@
               ],
               {
                 title: "Tipificaciones",
+                showlegend: false,
               }
             );
           });
       }
 
-      // Actualizar cada 5 segundos
       setInterval(actualizarGraficos, 5000);
-
-      // Cargar inicialmente
       actualizarGraficos();
 
       document.querySelectorAll("select").forEach((select) => {
         select.addEventListener("change", () => {
-          // Lógica para actualizar los datos filtrados
           fetchDatosFiltrados();
         });
+      });
+
+      async function fetchDatosFiltrados() {
+        const filtros = {
+          fecha_inicio: document.querySelector('[name="fecha_inicio"]').value,
+          fecha_final: document.querySelector('[name="fecha_final"]').value,
+          nivel: document.querySelectorAll(".select")[0].value,
+          estado: document.querySelectorAll(".select")[1].value,
+          tipificacion: document.querySelectorAll(".select")[2].value,
+        };
+
+        try {
+          const response = await fetch(
+            `/datos_estadisticas?${new URLSearchParams(filtros)}`
+          );
+          const data = await response.json();
+
+          // Actualizar toda la interfaz
+          actualizarUI(data);
+          actualizarGraficos(data);
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+
+      // Añadir event listeners a los filtros
+      document.querySelectorAll("input, select").forEach((element) => {
+        element.addEventListener("change", fetchDatosFiltrados);
       });
     </script>
   </body>

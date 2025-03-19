@@ -1,314 +1,319 @@
-# import os
-# import csv
-# import json
-# from datetime import datetime
-# from flask import request, flash, redirect, url_for, send_from_directory
-# from database.config import mysql
-
-# # Configuración de directorios
-# UPLOAD_FOLDER = "dbUploaded"  # Directorio para guardar CSVs subidos
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Crear directorio si no existe
-
-
-# # Helpers para conversión de formatos
-# def convertir_fechas(item):
-#     """Convierte campos de fecha ISO a formato DD/MM/YYYY."""
-#     for key, value in item.items():
-#         try:
-#             item[key] = datetime.strptime(value, "%Y-%m-%d").strftime("%d/%m/%Y")
-#         except (ValueError, TypeError):
-#             pass
-#     return item
-
-
-# def formatear_encabezado(header):
-#     """Formatea los encabezados del CSV."""
-#     return [col.strip().lower().replace(" ", "_") for col in header]
-
-
-# # Función para subir archivos CSV
-# def upload():
-#     if request.method == "POST":
-#         file = request.files["file"]
-
-#         if file and file.filename.endswith(".csv"):
-#             try:
-#                 # Guardar CSV en disco
-#                 csv_filename = os.path.join(UPLOAD_FOLDER, file.filename)
-#                 file.save(csv_filename)
-
-#                 # Convertir CSV a JSON
-#                 with open(csv_filename, newline="", encoding="utf-8") as csvfile:
-#                     reader = csv.DictReader(csvfile)
-#                     data = [convertir_fechas(row) for row in reader]
-#                     json_filename = csv_filename.replace(".csv", ".json")
-#                     with open(json_filename, "w", encoding="utf-8") as jsonfile:
-#                         json.dump(data, jsonfile, ensure_ascii=False, indent=4)
-
-#                 # Insertar en base de datos
-#                 cur = mysql.connection.cursor()
-#                 cur.execute(
-#                     "INSERT INTO uploaded_db (nombre, date_upload) VALUES (%s, %s)",
-#                     (file.filename, datetime.now()),
-#                 )
-#                 mysql.connection.commit()
-#                 cur.close()
-
-#                 flash("Archivo subido y procesado exitosamente!", "success")
-#             except Exception as e:
-#                 flash(f"Error al procesar el archivo: {str(e)}", "danger")
-
-#             return redirect(url_for("administradores.downloadDB"))
-
-
-# # Función para descargar archivos CSV
-# def download(id_db):
-#     try:
-#         cur = mysql.connection.cursor()
-#         cur.execute(
-#             "SELECT nombre, date_upload FROM uploaded_db WHERE id_db = %s", (id_db,)
-#         )
-#         result = cur.fetchone()
-#         cur.close()
-
-#         if not result:
-#             flash("Registro no encontrado", "danger")
-#             return redirect(url_for("administradores.downloadDB"))
-
-#         nombre_archivo, fecha_subida = result
-#         archivo_path = os.path.join(UPLOAD_FOLDER, nombre_archivo)
-
-#         if not os.path.exists(archivo_path):
-#             flash("El archivo no existe en el servidor", "danger")
-#             return redirect(url_for("administradores.downloadDB"))
-
-#         return send_from_directory(
-#             directory=UPLOAD_FOLDER,
-#             path=nombre_archivo,
-#             as_attachment=True,
-#             download_name=f"Bases de datos Kliiker ({fecha_subida.strftime('%d-%m-%Y')}).csv",
-#         )
-#     except Exception as e:
-#         flash(f"Error al descargar el archivo: {str(e)}", "danger")
-#         return redirect(url_for("administradores.downloadDB"))
-
 import os
 import csv
+import io
 from datetime import datetime
-from flask import request, flash, redirect, url_for, send_from_directory, abort
+from flask import flash, make_response
 from werkzeug.utils import secure_filename
 from database.config import mysql
 
-UPLOAD_FOLDER = "dbUploaded"
-ALLOWED_EXTENSIONS = {"csv"}
+# Mapeo de nombres de campos entre CSV y base de datos
+FIELD_MAPPING = {
+    "id": "id_kliiker",
+    "client_id": "id_kliiker",
+    "phone": "celular",
+    "mobile": "celular",
+    "email": "correo",
+    "level": "nivel",
+    "fecha_gestion": "fecha",
+    "comment": "comentario",
+    "next_action": "fechaProximaGestion",
+    "user": "nombre_as",
+    "tipo_gestion": "tipoGestion",
+    "motivo": "motivoNoInteres",
+}
 
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+class CSVProcessor:
+    """
+    Clase para procesar operaciones con archivos CSV incluyendo:
+    - Subida y procesamiento de datos
+    - Descarga de reportes
+    - Manejo de base de datos MySQL
+    """
 
+    def __init__(self, mysql):
+        """Inicializa con conexión MySQL"""
+        self.mysql = mysql
 
-def validate_kliiker_data(record):
-    required_fields = ["id_kliiker", "nombre", "celular"]
-    return all(record.get(field) for field in required_fields)
+    def smart_mapping(self, field_name):
+        """
+        Traduce nombres de columnas del CSV a nombres de campos de la base de datos
+        usando el mapeo FIELD_MAPPING como fallback
+        """
+        return FIELD_MAPPING.get(field_name.lower().strip(), field_name.lower().strip())
 
+    def allowed_file(self, filename):
+        """Valida extensiones de archivo permitidas (.csv)"""
+        return "." in filename and filename.rsplit(".", 1)[1].lower() in {"csv"}
 
-def parse_date(date_str):
-    date_formats = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"]
-    for fmt in date_formats:
+    def handle_upload(self, request):
+        """
+        Maneja el proceso completo de subida de archivos CSV:
+        1. Validación de archivo
+        2. Procesamiento en lotes
+        3. Inserción en base de datos
+        4. Manejo de transacciones
+        5. Limpieza de archivos temporales
+        """
+        # Validación inicial de archivo
+        if "file" not in request.files:
+            return {"status": "error", "message": "No se encontró el archivo"}
+
+        file = request.files["file"]
+        if file.filename == "":
+            return {"status": "error", "message": "Archivo no seleccionado"}
+
+        if not self.allowed_file(file.filename):
+            return {"status": "error", "message": "Tipo de archivo no permitido"}
+
         try:
-            return datetime.strptime(date_str, fmt).date()
-        except (ValueError, TypeError):
-            continue
-    return None
+            # Configuración inicial de archivo
+            filename = secure_filename(file.filename)
+            filepath = os.path.join("dbUploaded", filename)
+            file.save(filepath)
 
+            cursor = self.mysql.connection.cursor()
+            batch_size = 1000  # Optimización para inserciones masivas
+            batch = []
 
-def handle_upload():
-    if "file" not in request.files:
-        flash("No se encontró el archivo en la solicitud", "error")
-        return redirect(url_for("administradores.downloadDB"))
+            # Procesamiento del CSV
+            with open(filepath, "r", encoding="utf-8") as csvfile:
+                csv_reader = csv.DictReader(csvfile)
+                # Aplicar mapeo inteligente a los nombres de columna
+                fieldnames = [
+                    self.smart_mapping(fn.strip()) for fn in csv_reader.fieldnames
+                ]
 
-    file = request.files["file"]
+                for row in csv_reader:
+                    processed = self.process_row(row)
+                    if not self.validate_kliiker(processed):
+                        flash(f"Registro inválido: {processed}", "warning")
+                        continue
 
-    if file.filename == "":
-        flash("Archivo no seleccionado", "error")
-        return redirect(url_for("administradores.downloadDB"))
+                    batch.append(processed)
+                    # Inserta por lotes para mejor performance
+                    if len(batch) >= batch_size:
+                        self.insert_batch(cursor, batch)
+                        batch = []
 
-    if not allowed_file(file.filename):
-        flash("Tipo de archivo no permitido", "error")
-        return redirect(url_for("administradores.downloadDB"))
+                # Insertar datos restantes
+                if batch:
+                    self.insert_batch(cursor, batch)
 
-    try:
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
-
-        with open(filepath, "r", encoding="utf-8") as csvfile:
-            csv_reader = csv.DictReader(csvfile)
-            fieldnames = [fn.strip().lower() for fn in csv_reader.fieldnames]
-
-            cursor = mysql.connection.cursor()
-
-            for row in csv_reader:
-                record = {
-                    k.lower().strip(): v.strip() if v else None for k, v in row.items()
-                }
-
-                if not validate_kliiker_data(record):
-                    flash(f"Registro inválido: {record}", "warning")
-                    continue
-
-                processed = {
-                    "id_Kliiker": record.get("id_kliiker"),
-                    "nombre": record.get("nombre"),
-                    "apellido": record.get("apellido"),
-                    "celular": record.get("celular"),
-                    "nivel": int(record.get("nivel", 0)) if record.get("nivel") else 0,
-                    "correo": record.get("correo"),
-                    "fecha": parse_date(record.get("fecha")),
-                    "venta": bool(int(record.get("venta", 0))),
-                    "fechaIngreso": parse_date(record.get("fechaingreso")),
-                    "diaSinGestion": (
-                        int(record.get("diasingestion", 0))
-                        if record.get("diasingestion")
-                        else None
-                    ),
-                    "gestionable": bool(int(record.get("gestionable", 0))),
-                    "id_estado": (
-                        int(record.get("id_estado"))
-                        if record.get("id_estado")
-                        else None
-                    ),
-                    "fechaSinGestion": parse_date(record.get("fechasingestion")),
-                }
-
-                cursor.execute(
-                    """
-                    INSERT INTO kliiker (
-                        id_Kliiker, nombre, apellido, celular, nivel, correo,
-                        fecha, venta, fechaIngreso, diaSinGestion,
-                        gestionable, id_estado, fechaSinGestion
-                    ) VALUES (
-                        %(id_Kliiker)s, %(nombre)s, %(apellido)s, %(celular)s,
-                        %(nivel)s, %(correo)s, %(fecha)s, %(venta)s,
-                        %(fechaIngreso)s, %(diaSinGestion)s, %(gestionable)s,
-                        %(id_estado)s, %(fechaSinGestion)s
-                    )
-                    ON DUPLICATE KEY UPDATE
-                        nombre = VALUES(nombre),
-                        apellido = VALUES(apellido),
-                        correo = VALUES(correo),
-                        id_estado = VALUES(id_estado)
-                """,
-                    processed,
-                )
-
-                if record.get("id_gestion"):
-                    gestion_data = {
-                        "id_gestion": int(record["id_gestion"]),
-                        "id_llamada": (
-                            int(record["id_llamada"])
-                            if record.get("id_llamada")
-                            else None
-                        ),
-                        "fecha": parse_date(record.get("fecha")),
-                        "canal": record.get("canal"),
-                        "tipoGestion": record.get("tipogestion"),
-                        "comentario": record.get("comentario"),
-                        "fechaProximaGestion": parse_date(
-                            record.get("fechaproximagestion")
-                        ),
-                        "nombre_AS": record.get("nombre_as"),
-                        "id_tipificacion": (
-                            int(record["id_tipificacion"])
-                            if record.get("id_tipificacion")
-                            else None
-                        ),
-                        "motivoNoInteres": record.get("motivonointeres"),
-                        "id_estado": (
-                            int(record.get("id_estado"))
-                            if record.get("id_estado")
-                            else None
-                        ),
-                        "celular": record.get("celular"),
-                    }
-
-                    cursor.execute(
-                        """
-                        INSERT INTO gestiones (
-                            id_gestion, id_llamada, fecha, canal, tipoGestion,
-                            comentario, fechaProximaGestion, nombre_AS,
-                            id_tipificacion, motivoNoInteres, id_estado, celular
-                        ) VALUES (
-                            %(id_gestion)s, %(id_llamada)s, %(fecha)s, %(canal)s,
-                            %(tipoGestion)s, %(comentario)s, %(fechaProximaGestion)s,
-                            %(nombre_AS)s, %(id_tipificacion)s, %(motivoNoInteres)s,
-                            %(id_estado)s, %(celular)s
-                        )
-                    """,
-                        gestion_data,
-                    )
-
+            # Registrar subida en base de datos
             cursor.execute(
-                """
-                INSERT INTO uploaded_db (nombre, date_upload)
-                VALUES (%s, %s)
-            """,
+                "INSERT INTO uploaded_db (nombre, date_upload) VALUES (%s, %s)",
                 (filename, datetime.now()),
             )
+            self.mysql.connection.commit()
+            return {"status": "success", "message": "Archivo procesado exitosamente!"}
 
-            mysql.connection.commit()
-            flash("Archivo procesado exitosamente!", "success")
+        except Exception as e:
+            self.mysql.connection.rollback()
+            return {"status": "error", "message": f"Error procesando archivo: {str(e)}"}
+        finally:
+            # Limpieza de recursos
+            if "cursor" in locals():
+                cursor.close()
+            if os.path.exists(filepath):
+                os.remove(filepath)
 
-    except Exception as e:
-        mysql.connection.rollback()
-        flash(f"Error procesando archivo: {str(e)}", "error")
+    def process_row(self, raw_row):
+        """
+        Procesamiento avanzado de filas:
+        - Conversión de tipos de datos
+        - Formateo de fechas múltiples
+        - Limpieza de espacios
+        - Manejo de valores nulos
+        """
+        processed = {
+            self.smart_mapping(k): v.strip() if v else None for k, v in raw_row.items()
+        }
 
-    finally:
-        if "cursor" in locals():
-            cursor.close()
-        if os.path.exists(filepath):
-            os.remove(filepath)
+        # Sistema de conversión de tipos de datos
+        conversions = {
+            "nivel": int,
+            "venta": lambda x: bool(int(x)) if x else False,
+            "gestionable": lambda x: bool(int(x)) if x else False,
+            "id_estado": lambda x: int(x) if x else None,
+            "id_tipificacion": lambda x: int(x) if x else None,
+            "diaSinGestion": lambda x: int(x) if x else None,
+        }
 
-    return redirect(url_for("administradores.downloadDB"))
+        # Aplicar conversiones
+        for field, converter in conversions.items():
+            if field in processed:
+                try:
+                    processed[field] = (
+                        converter(processed[field]) if processed[field] else None
+                    )
+                except (ValueError, TypeError):
+                    processed[field] = None
 
+        # Sistema de parseo de fechas con múltiples formatos
+        date_fields = [
+            "fecha",
+            "fechaIngreso",
+            "fechaSinGestion",
+            "fechaProximaGestion",
+        ]
+        date_formats = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"]
 
-def handle_download(id_db):
-    try:
-        cursor = mysql.connection.cursor()
-        cursor.execute(
+        for field in date_fields:
+            if processed.get(field):
+                for fmt in date_formats:
+                    try:
+                        processed[field] = datetime.strptime(
+                            processed[field], fmt
+                        ).date()
+                        break
+                    except (ValueError, TypeError):
+                        continue
+                else:
+                    processed[field] = None
+
+        return processed
+
+    def validate_kliiker(self, row):
+        """Valida campos obligatorios para inserción en base de datos"""
+        required_fields = ["id_kliiker", "nombre", "celular"]
+        return all(row.get(field) for field in required_fields)
+
+    def insert_batch(self, cursor, batch):
+        """
+        Inserta lotes de datos con actualización de duplicados
+        Usa transacciones para mejor performance
+        """
+        cursor.executemany(
             """
-            SELECT nombre, date_upload 
-            FROM uploaded_db 
-            WHERE id_db = %s
-        """,
-            (id_db,),
+            INSERT INTO kliiker (
+                id_Kliiker, nombre, apellido, celular, nivel, correo,
+                fecha, venta, fechaIngreso, diaSinGestion,
+                gestionable, id_estado, fechaSinGestion
+            ) VALUES (
+                %(id_Kliiker)s, %(nombre)s, %(apellido)s, %(celular)s,
+                %(nivel)s, %(correo)s, %(fecha)s, %(venta)s,
+                %(fechaIngreso)s, %(diaSinGestion)s, %(gestionable)s,
+                %(id_estado)s, %(fechaSinGestion)s
+            )
+            ON DUPLICATE KEY UPDATE
+                nombre = VALUES(nombre),
+                apellido = VALUES(apellido),
+                correo = VALUES(correo),
+                id_estado = VALUES(id_estado)
+            """,
+            batch,
         )
+        self.mysql.connection.commit()
 
-        db_record = cursor.fetchone()
-        cursor.close()
+    def download_gestion(self):
+        """
+        Genera reporte CSV completo de gestiones con:
+        - Datos de tablas relacionadas
+        - Formato consistente
+        - Manejo de errores
+        """
+        try:
+            cursor = self.mysql.connection.cursor()
+            cursor.execute(
+                """
+                SELECT g.*, e.estado, t.tipificacion 
+                FROM gestiones g
+                LEFT JOIN estadoKliiker e ON g.id_estado = e.id_estado
+                LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
+                """
+            )
 
-        if not db_record:
-            flash("Registro no encontrado", "error")
-            return redirect(url_for("administradores.downloadDB"))
+            # Configuración de CSV
+            column_names = [i[0] for i in cursor.description]
+            rows = cursor.fetchall()
+            output = io.StringIO()
+            writer = csv.writer(output, delimiter=";")
 
-        original_filename, upload_date = db_record
-        safe_filename = secure_filename(original_filename)
-        file_path = os.path.join(UPLOAD_FOLDER, safe_filename)
+            # Escritura de datos
+            writer.writerow(column_names)
+            for row in rows:
+                writer.writerow(
+                    [
+                        str(row[column]) if row[column] is not None else ""
+                        for column in column_names
+                    ]
+                )
 
-        if not os.path.isfile(file_path):
-            flash("Archivo no encontrado en el servidor", "error")
-            return redirect(url_for("administradores.downloadDB"))
+            output.seek(0)
+            response = make_response(output.getvalue())
+            response.headers["Content-Disposition"] = (
+                'attachment; filename="gestiones_completo.csv"'
+            )
+            response.headers["Content-type"] = "text/csv"
+            return response
 
-        download_name = f"backup_{upload_date.strftime('%Y%m%d')}_{safe_filename}"
+        except Exception as e:
+            return make_response("Error al generar el CSV", 500)
+        finally:
+            if "cursor" in locals():
+                cursor.close()
 
-        return send_from_directory(
-            directory=UPLOAD_FOLDER,
-            path=safe_filename,
-            as_attachment=True,
-            download_name=download_name,
-            mimetype="text/csv",
-        )
+    def download_historial(self):
+        """
+        Genera reporte CSV del historial de gestiones con:
+        - Datos de múltiples tablas relacionadas
+        - Formato compatible con Excel
+        - Codificación UTF-8
+        """
+        try:
+            cursor = self.mysql.connection.cursor()
+            cursor.execute(
+                """
+                SELECT h.*, e.estado, u.nombre_AS
+                FROM historial_gestiones h
+                LEFT JOIN kliiker k ON h.celular = k.celular
+                LEFT JOIN usuarios u ON h.nombre_AS = u.nombre_AS
+                LEFT JOIN estadoKliiker e ON h.id_estado = e.id_estado
+                LEFT JOIN tipificacion t ON h.id_tipificacion = t.id_tipificacion
+                """
+            )
 
-    except Exception as e:
-        flash(f"Error en descarga: {str(e)}", "error")
-        return redirect(url_for("administradores.downloadDB"))
+            # Configuración de CSV
+            column_names = [i[0] for i in cursor.description]
+            rows = cursor.fetchall()
+            output = io.StringIO()
+            writer = csv.writer(output, delimiter=";")
+
+            # Escritura de datos
+            writer.writerow(column_names)
+            for row in rows:
+                writer.writerow(
+                    [
+                        str(row[column]) if row[column] is not None else ""
+                        for column in column_names
+                    ]
+                )
+
+            # Generación de respuesta
+            output.seek(0)
+            filename = f"Historial_{datetime.now().strftime('%Y-%m-%d')}.csv"
+            response = make_response(output.getvalue())
+            response.headers["Content-Disposition"] = (
+                f'attachment; filename="{filename}"'
+            )
+            response.headers["Content-type"] = "text/csv"
+            return response
+
+        except Exception as e:
+            return make_response("Error al generar el historial", 500)
+        finally:
+            if "cursor" in locals():
+                cursor.close()
+
+    def get_uploaded_files(self):
+        """Obtiene listado de archivos subidos desde la base de datos"""
+        try:
+            cursor = self.mysql.connection.cursor()
+            cursor.execute("SELECT * FROM uploaded_db ORDER BY date_upload DESC")
+            return cursor.fetchall()
+        except Exception as e:
+            return []
+        finally:
+            if "cursor" in locals():
+                cursor.close()

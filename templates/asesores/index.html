@@ -1,189 +1,208 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración</title>
-  <link rel="stylesheet" href="/static/css/asesor.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="/static/css/asesor.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+  </head>
 
-<body>
-  <!-- Navbar -->
-  <div class="navbar-custom" id="navbar">
-    <div class="iconos">
-      <ul>
-        <span class="user">
-          <i class="bi bi-person-circle"></i><br>
-          Hola {{session["usuario"]}} ({{session["rol"]}})
-        </span>
-        
-        {% if session['rol'] == 'Administrador' %}
-        <div class="icon">
-          <li>
-            <a href="{{url_for('estadisticas.mostrar_graficos')}}">
-              <i class="bi bi-bar-chart"></i>Estadísticas
-            </a>
-          </li>
-        </div>
-        {% endif %}
-        
-        <div class="icon">
-          <li>
-            <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
-              <i class="bi bi-folder2"></i>Gestión
-            </a>
-          </li>
-        </div>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar-custom" id="navbar">
+      <div class="iconos">
+        <ul>
+          <span class="user">
+            <i class="bi bi-person-circle"></i><br />
+            Hola {{session["usuario"]}} ({{session["rol"]}})
+          </span>
 
-        {% if session['rol'] == 'Administrador' %}
-        <div class="icon">
-          <li>
-            <a href="{{url_for('administradores.downloadDB')}}">
-              <i class="bi bi-file-earmark-text"></i>Administrativo
-            </a>
-          </li>
-        </div>
+          {% if session['rol'] == 'Administrador' %}
+          <div class="icon">
+            <li>
+              <a href="{{url_for('estadisticas.mostrar_graficos')}}">
+                <i class="bi bi-bar-chart"></i>Estadísticas
+              </a>
+            </li>
+          </div>
+          {% endif %}
 
-        <div class="icon">
-          <li>
-            <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
-              <i class="bi bi-person"></i>Asesor
-            </a>
-          </li>
-        </div>
-        {% endif %}
-      </ul>
-    </div>
+          <div class="icon">
+            <li>
+              <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
+                <i class="bi bi-folder2"></i>Gestión
+              </a>
+            </li>
+          </div>
 
-    <div class="cerrar-icon">
-      <a href="{{ url_for('auth.logout') }}">
-        <i class="bi bi-arrow-right-circle"></i>Cerrar sesión
-      </a>
-    </div>
-    <img src="../../static/img/Kliiker-Logo.png" alt="Logo Kliiker" class="logo-header">
-  </div>
+          {% if session['rol'] == 'Administrador' %}
+          <div class="icon">
+            <li>
+              <a href="{{url_for('administradores.downloadDB')}}">
+                <i class="bi bi-file-earmark-text"></i>Administrativo
+              </a>
+            </li>
+          </div>
 
-  <!-- Contenido principal -->
-  <div class="container-tables">
-    <!-- Barra de búsqueda -->
-    <div class="search-bar">
-      <div class="search-group">
-        <i class="bi bi-search"></i>
-        <input type="search" id="searchInput" placeholder="Buscar...">
+          <div class="icon">
+            <li>
+              <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
+                <i class="bi bi-person"></i>Asesor
+              </a>
+            </li>
+          </div>
+          {% endif %}
+        </ul>
       </div>
-      <img src="../../static/img/AndesBPO-Logo.png" alt="Logo Andes">
+
+      <div class="cerrar-icon">
+        <a href="{{ url_for('auth.logout') }}">
+          <i class="bi bi-arrow-right-circle"></i> Cerrar sesión
+        </a>
+      </div>
+      <img
+        src="../../static/img/Kliiker-Logo.png"
+        alt="Logo Kliiker"
+        class="logo-header"
+      />
     </div>
 
-    <!-- Botón agregar -->
-    <div class="table-buttons">
-      <button class="tab" onclick="abrirModal()">Agregar Asesor</button>
-    </div>
-
-    <!-- Tabla -->
-    <div class="table-container active">
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre_AS</th>
-            <th>Documento</th>
-            <th>Usuario</th>
-            <th>Rol</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for fila in datos %}
-          <tr>
-            <td>{{ fila.nombre_AS }}</td>
-            <td>{{ fila.documento }}</td>
-            <td>{{ fila.usuario }}</td>
-            <td>{{ fila.rol }}</td>
-            <td>{{ fila.estadoUsuario }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal-container" id="detalleModal">
-      <div class="modal-contenido">
-        <div class="modal-header">
-          <h5 class="modal-title">Asesor</h5>
-          <span class="modal-cerrar" onclick="cerrarModal()">&times;</span>
+    <!-- Contenido principal -->
+    <div class="container-tables">
+      <!-- Barra de búsqueda -->
+      <div class="search-bar">
+        <div class="search-group">
+          <i class="bi bi-search"></i>
+          <input type="search" id="searchInput" placeholder="Buscar..." />
         </div>
-        
-        <form method="POST" action="{{url_for('insertar_asesor.insertar')}}">
-          <div class="form-group">
-            <label class="form-label">Usuario</label>
-            <input type="text" class="form-control" name="usuario" required>
+        <img src="../../static/img/AndesBPO-Logo.png" alt="Logo Andes" />
+      </div>
+
+      <!-- Botón agregar -->
+      <div class="table-buttons">
+        <button class="tab" onclick="abrirModal()">Agregar Asesor</button>
+      </div>
+
+      <!-- Tabla -->
+      <div class="table-container active">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre_AS</th>
+              <th>Documento</th>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fila in datos %}
+            <tr>
+              <td>{{ fila.nombre_AS }}</td>
+              <td>{{ fila.documento }}</td>
+              <td>{{ fila.usuario }}</td>
+              <td>{{ fila.rol }}</td>
+              <td>{{ fila.estadoUsuario }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal-container" id="detalleModal">
+        <div class="modal-contenido">
+          <div class="modal-header">
+            <h5 class="modal-title">Asesor</h5>
+            <span class="modal-cerrar" onclick="cerrarModal()">&times;</span>
           </div>
 
-          <div class="group1">
+          <form method="POST" action="{{url_for('insertar_asesor.insertar')}}">
             <div class="form-group">
-              <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" name="nombre" required>
+              <label class="form-label">Usuario</label>
+              <input type="text" class="form-control" name="usuario" required />
             </div>
-            <div class="form-group">
-              <label class="form-label">Documento</label>
-              <input type="text" class="form-control" name="documento" required>
-            </div>
-          </div>
 
-          <div class="group2">
-            <div class="form-group">
-              <label class="form-label">Rol</label>
-              <select class="form-select" name="rol" required>
-                <option value="">Seleccionar</option>
-                <option value="Asesor">Asesor</option>
-                <option value="Administrador">Administrador</option>
-              </select>
+            <div class="group1">
+              <div class="form-group">
+                <label class="form-label">Nombre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="nombre"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Documento</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="documento"
+                  required
+                />
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Estado</label>
-              <select class="form-select" name="estado" required>
-                <option value="">Seleccionar</option>
-                <option value="1">Activo</option>
-                <option value="2">Inactivo</option>
-              </select>
-            </div>
-          </div>
 
-          <button type="submit" class="btn-primary">Guardar</button>
-        </form>
+            <div class="group2">
+              <div class="form-group">
+                <label class="form-label">Rol</label>
+                <select class="form-select" name="rol" required>
+                  <option value="">Seleccionar</option>
+                  <option value="Asesor">Asesor</option>
+                  <option value="Administrador">Administrador</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Estado</label>
+                <select class="form-select" name="estado" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Activo</option>
+                  <option value="2">Inactivo</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Guardar</button>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script>
-    // Funciones del modal
-    function abrirModal() {
-      document.getElementById("detalleModal").style.display = "flex";
-    }
+    <script>
+      // Funciones del modal
+      function abrirModal() {
+        document.getElementById("detalleModal").style.display = "flex";
+      }
 
-    function cerrarModal() {
-      document.getElementById("detalleModal").style.display = "none";
-    }
+      function cerrarModal() {
+        document.getElementById("detalleModal").style.display = "none";
+      }
 
-    // Cerrar al hacer click fuera
-    window.onclick = function(event) {
-      const modal = document.getElementById("detalleModal");
-      if (event.target === modal) cerrarModal();
-    };
+      // Cerrar al hacer click fuera
+      window.onclick = function (event) {
+        const modal = document.getElementById("detalleModal");
+        if (event.target === modal) cerrarModal();
+      };
 
-    // Búsqueda
-    document.getElementById("searchInput").addEventListener("input", function(e) {
-      const filter = e.target.value.toUpperCase();
-      const rows = document.querySelectorAll(".table-container tbody tr");
-      
-      rows.forEach(row => {
-        const text = Array.from(row.children)
-          .map(cell => cell.textContent.toUpperCase())
-          .join(" ");
-        row.style.display = text.includes(filter) ? "" : "none";
-      });
-    });
-  </script>
-</body>
+      // Búsqueda
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", function (e) {
+          const filter = e.target.value.toUpperCase();
+          const rows = document.querySelectorAll(".table-container tbody tr");
+
+          rows.forEach((row) => {
+            const text = Array.from(row.children)
+              .map((cell) => cell.textContent.toUpperCase())
+              .join(" ");
+            row.style.display = text.includes(filter) ? "" : "none";
+          });
+        });
+    </script>
+  </body>
 </html>

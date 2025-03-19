@@ -17,7 +17,9 @@ from models.mostrar.view_kliikers import mostrar_tabla
 from database.config import mysql
 from werkzeug.security import check_password_hash
 from auth.decorators import login_required, role_required
-from models.descargarDB.downloadDB import handle_download, handle_upload
+from models.descargarDB.downloadDB import CSVProcessor
+
+csv_processor = CSVProcessor(mysql)
 
 # -------------------------- Inicialización de Flask ------------------------- #
 app = Flask(__name__)
@@ -67,28 +69,30 @@ def admin():
 @login_required
 @role_required("Administrador")
 def downloadDB():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT id_db, nombre, date_upload FROM uploaded_db")
-    databases = cur.fetchall()
-    cur.close()
+    databases = csv_processor.get_uploaded_files()
     return render_template("descargarDB/downloadDB.html", databases=databases)
 
 
 # ------------- Rutas para la carga y descarga de bases de datos ------------- #
-# Ruta para subir los archivos .csv
-@administradores.route("/admin/uploadDB", methods=["POST"])
-def handle_upload():
-    return handle_upload()
+@administradores.route("/uploadDB", methods=["POST"])
+def subir_csv():
+    result = csv_processor.handle_upload(request)
+    flash(result["message"], result["status"])
+    return redirect(url_for("administradores.downloadDB"))
 
 
-# Ruta para descargar los archivos .csv
-@administradores.route("/admin/download")
-def handle_download():
-    id_db = request.args.get("id_db", type=int)
-    if not id_db:
-        flash("ID no proporcionado", "danger")
-        return redirect(url_for("administradores.downloadDB"))
-    return handle_download(id_db)
+@administradores.route("/descargar/gestion")
+def descargar_gestion():
+    response = csv_processor.download_gestion()
+    if response:
+        return response
+    flash("Error al generar el archivo de gestión", "error")
+    return csv_processor.download_gestion()
+
+
+@administradores.route("/descargar/historial")
+def descargar_historial():
+    return csv_processor.download_historial()
 
 
 # ---------------------------- Panel de Asesores ---------------------------- #

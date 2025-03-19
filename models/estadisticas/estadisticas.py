@@ -1,14 +1,19 @@
 # En tu archivo de rutas (ej: estadisticas.py)
 from flask import Blueprint, jsonify, render_template
 from database.config import mysql
-import plotly.express as px
-import plotly.io as pio
+
+# import plotly.express as px
+# import plotly.io as pio
 import MySQLdb
+from flask import current_app
+
+# from models.mostrar.view_kliikers import total_gestiones
 
 estadisticas_bp = Blueprint("estadisticas", __name__)
 
 
 def obtener_datos_estadisticas():
+    # gestiones_totales = total_gestiones()
     try:
         connection = mysql.connection
         # cursor = connection.cursor()
@@ -16,10 +21,10 @@ def obtener_datos_estadisticas():
         # Consulta para estados
         cursor.execute(
             """
-            SELECT e.estado, COUNT(*) as cantidadEstados
+            SELECT g.id_estado, e.estado, COUNT(*) as cantidadEstados
             FROM gestiones g
             JOIN estadoKliiker e ON g.id_estado = e.id_estado 
-            GROUP BY e.estado
+            GROUP BY g.id_estado
         """
         )
         datos_estados = cursor.fetchall()
@@ -34,6 +39,19 @@ def obtener_datos_estadisticas():
         """
         )
         datos_tipificaciones = cursor.fetchall()
+
+        # Consulta Sin interes
+        cursor.execute(
+            """
+                SELECT COUNT(*) as cantSinInteres
+                FROM gestiones g
+                # JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
+                WHERE g.id_tipificacion = 10
+                
+            
+            """
+        )
+        datos_sinInteres = cursor.fetchall()
 
         # Consulta Codigo
         cursor.execute(
@@ -86,16 +104,66 @@ def obtener_datos_estadisticas():
             FROM kliiker
             """
         )
+
         datos_total = cursor.fetchall()
+
+        # consulta de gestiones totales
+        cursor.execute(
+            """
+            SELECT COUNT(*) as cantidadGestiones
+            FROM historial_gestiones 
+            """
+        )
+        datos_gestiones = cursor.fetchall()
+
+        cursor.execute(
+            """
+           SELECT COUNT(*) as cantidadSinGestion
+            FROM kliiker k
+            WHERE NOT EXISTS (
+            SELECT 1
+                FROM historial_gestiones h
+                WHERE h.celular = k.celular
+            );
+            """
+        )
+        datos_sinGestion = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS cantidadGestionados
+            FROM kliiker k
+            WHERE EXISTS (
+            SELECT 1
+            FROM historial_gestiones h
+            WHERE h.celular = k.celular
+            );
+            """
+        )
+        datos_gestionados = cursor.fetchall()
+
+        cursor.execute("SELECT COUNT(*) AS gestionesTotales FROM historial_gestiones")
+        gestionesTotales = cursor.fetchall()
+
+        # consulta gestionados
+        # consulta registros
+        # consulta codigo fin
+        # consulta sin gestión
+        # consulta sin interes
 
         # print(datos_total)
         # print(datos_venta)
         # print(datos_codigo)
         # print(datos_estados)
         # print(datos_tipificaciones)
-        print(datos_rpc)
-        print(datos_contactabilidad)
-
+        # print(datos_rpc)
+        # print(datos_contactabilidad)
+        # print(datos_gestiones)
+        # print(datos_sinInteres)
+        # print(gestiones_totales)
+        # print(datos_sinGestion)
+        # print(datos_gestionados)
+        # print(gestionesTotales)
         cursor.close()
 
         return {
@@ -105,6 +173,12 @@ def obtener_datos_estadisticas():
             "codigos": datos_codigo,
             "ventas": datos_venta,
             "total_kliikers": datos_total,
+            "cantidadGestiones": datos_gestiones,
+            "cantidadContac": datos_contactabilidad,
+            "sinInteres": datos_sinInteres,
+            "sinGestion": datos_sinGestion,
+            "gestionados": datos_gestionados,
+            "gestionesTotales": gestionesTotales,
         }
     except MySQLdb.Error as e:
         print(f"Error de base de datos: {e}")

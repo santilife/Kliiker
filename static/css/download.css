@@ -136,7 +136,7 @@ body {
 .search-bar input[type="search"] {
   width: 20rem;
   padding: 10px 10px 10px 35px;
-  border: 2px solid #F2EAEA;
+  border: 2px solid #f2eaea;
   background-color: #e3dbdb;
   color: black;
   font-weight: bolder;
@@ -197,7 +197,6 @@ body {
 .btn-upload {
   border: 2px solid transparent;
 }
-
 
 .btn:hover {
   background-color: #e6e6e6;

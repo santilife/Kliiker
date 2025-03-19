@@ -3,30 +3,25 @@
 * {
   font-family: "Rubik", sans-serif;
 }
-
-/* Estilos generales */
 body {
   margin: 0;
   background-color: #f5f5f5;
   min-height: 100vh;
-  display: grid;
-  grid-template-areas: "navbar main";
-  grid-template-columns: 250px 1fr;
-  grid-template-rows: 1fr;
 }
 
-/* Navbar izquierda */
 .navbar-custom {
   position: fixed;
-  grid-area: navbar;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 215px;
   background-color: #f2eaea;
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  width: 215px;
-  height: 100vh;
+  z-index: 1000;
 }
 
 .navbar-custom div {
@@ -34,25 +29,21 @@ body {
   gap: 15px;
 }
 
-.bi-person-circle,
-.bi-lock{
+.bi-person-circle {
   font-size: 70px;
   color: #5043af;
+  margin: 0;
 }
 
 .navbar-custom ul {
   list-style: none;
-  /* padding: 0; */
   margin: 0;
   display: grid;
   gap: 10px;
   padding: 0;
   width: 100%;
 }
-.bi-search {
-  font-size: 20px;
-  color: black;
-}
+
 .navbar-custom .iconos li {
   margin: 10px 0;
   display: flex;
@@ -78,16 +69,6 @@ body {
   text-align: center;
 }
 
-/* .iconos{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    & icon{
-        padding: auto;
-    }
-  } */
-
 .navbar-custom .icon li:hover {
   background-color: #e3dbdb;
 }
@@ -95,14 +76,15 @@ body {
 .navbar-custom .cerrar-icon {
   transition: all ease 0.6s;
   border-radius: 10px;
-  display: flex;
+  margin-top: 20px;
+
   & a {
     text-decoration: none;
     color: #2c3e50;
     padding: 8px 15px;
     border-radius: 5px;
     transition: 0.3s;
-    display: block;
+    /* display: block; */
     width: 100%;
   }
 }
@@ -113,8 +95,8 @@ body {
 }
 
 .logo-header {
-  width: 80%; 
-  margin-bottom: 20px; 
+  width: 80%;
+  margin-bottom: 20px;
   align-self: center;
 }
 
@@ -124,7 +106,6 @@ body {
   margin: 5 px 0;
   padding: 5px;
 }
-
 
 /* Contenido principal */
 .container-tables {
@@ -329,7 +310,8 @@ th {
 }
 
 /* Estructura del formulario */
-.group1, .group2 {
+.group1,
+.group2 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
@@ -348,7 +330,8 @@ th {
   margin-bottom: 0.5rem;
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #cbd5e0;
@@ -389,18 +372,15 @@ th {
 
 /* Responsive */
 @media (max-width: 480px) {
-  .group1, .group2 {
+  .group1,
+  .group2 {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-content {
     padding: 1.5rem;
   }
 }
-
-
-
-
 
 @keyframes aparecer {
   from {
