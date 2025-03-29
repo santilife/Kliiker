@@ -13,6 +13,8 @@ from flask import (
     flash,
 )
 from datetime import datetime
+import os
+import subprocess
 from models.mostrar.view_kliikers import mostrar_tabla
 from database.config import mysql
 from werkzeug.security import check_password_hash
@@ -90,9 +92,115 @@ def descargar_gestion():
     return csv_processor.download_gestion()
 
 
+@administradores.route("/upload_process_csv", methods=["POST"])
+@login_required
+@role_required("Administrador")
+def upload_and_process_csv():
+    try:
+        # Validación original
+        if "csvFile" not in request.files:
+            return (
+                jsonify({"success": False, "message": "No se encontró el archivo"}),
+                400,
+            )
+
+        file = request.files["csvFile"]
+        if file.filename == "":
+            return (
+                jsonify({"success": False, "message": "Archivo no seleccionado"}),
+                400,
+            )
+
+        if not file.filename.lower().endswith(".csv"):
+            return jsonify({"success": False, "message": "Solo archivos CSV"}), 400
+
+        # Guardar CSV temporal
+        temp_dir = "temp_uploads"
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_csv_path = os.path.join(
+            temp_dir, f"upload_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
+        )
+        file.save(temp_csv_path)
+
+        # MODIFICACIÓN 1: Generar nombre del JSON con ruta absoluta
+        json_file = os.path.abspath(
+            f"Kliiker_{datetime.now().strftime('%d-%m-%Y')}.json"
+        )
+
+        # Convertir CSV a JSON
+        try:
+            conversion_result = subprocess.run(
+                ["python", "script_csv-json.py", temp_csv_path],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            app.logger.info(f"Conversión exitosa: {conversion_result.stdout}")
+
+        except subprocess.CalledProcessError as e:
+            error_msg = f"Error en conversión: {e.stderr}"
+            app.logger.error(error_msg)
+            return jsonify({"success": False, "message": error_msg}), 500
+
+        # MODIFICACIÓN 2: Pasar la ruta del JSON al script de importación
+        try:
+            import_result = subprocess.run(
+                ["python", "script_importar.py", json_file],  # <- Ruta dinámica
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            app.logger.info(f"Importación exitosa: {import_result.stdout}")
+
+        except subprocess.CalledProcessError as e:
+            error_msg = f"Error en importación: {e.stderr}"
+            app.logger.error(error_msg)
+            return jsonify({"success": False, "message": error_msg}), 500
+
+        # Registrar en base de datos
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute(
+                "INSERT INTO uploaded_db (nombre, date_upload, size) VALUES (%s, %s, %s)",
+                (file.filename, datetime.now(), os.path.getsize(temp_csv_path)),
+            )
+            mysql.connection.commit()
+
+        except Exception as e:
+            app.logger.error(f"Error registrando en DB: {str(e)}")
+            mysql.connection.rollback()
+
+        # MODIFICACIÓN 3: Limpieza de archivos temporales
+        finally:
+            if os.path.exists(temp_csv_path):
+                os.remove(temp_csv_path)
+            if os.path.exists(json_file):  # Eliminar JSON después de importar
+                try:
+                    os.remove(json_file)
+                except Exception as e:
+                    app.logger.error(f"Error eliminando JSON: {str(e)}")
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Datos importados exitosamente",
+                "original_filename": file.filename,
+            }
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error inesperado: {str(e)}")
+        return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
+
 @administradores.route("/descargar/historial")
 def descargar_historial():
     return csv_processor.download_historial()
+
+
+@administradores.route("/descargar/tarea_del_dia")
+def download_today_work():
+    return csv_processor.download_work_day()
 
 
 # ---------------------------- Panel de Asesores ---------------------------- #
@@ -140,12 +248,20 @@ def acceso():
             session["usuario"] = user["usuario"]
             session["rol"] = user["rol"]
             session["nombre_AS"] = user["nombre_AS"]
+            session["estadoUsuario"] = user["estadoUsuario"]
 
             # Redirección según el rol
             if user["rol"] == "Administrador":
-                return redirect(url_for("administradores.admin"))
+                if user["estadoUsuario"] == 1:
+                    return redirect(url_for("administradores.admin"))
+                else:
+                    return render_template("login.html")
+
             elif user["rol"] == "Asesor":
-                return redirect(url_for("asesores_generales.asesor"))
+                if user["estadoUsuario"] == 1:
+                    return redirect(url_for("asesores_generales.asesor"))
+                else:
+                    return render_template("login.html")
 
         else:
             return render_template("login.html")

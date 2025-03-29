@@ -9,20 +9,68 @@
       href="{{ url_for('static', filename='css/download.css') }}"
     />
     <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-  />
-</head>
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/global.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <style>
+      .loader {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        margin: 20px auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .upload-status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+
+      .upload-status.success {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .upload-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      #loadingIndicator {
+        text-align: center;
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <div class="navbar-custom" id="navbar">
       <div class="iconos">
         <ul>
           <span class="user">
-            <i class="bi bi-person-circle"></i><br>
+            <i class="bi bi-person-circle"></i><br />
             Hola {{session["usuario"]}} ({{session["rol"]}})
           </span>
-          
+
           {% if session['rol'] == 'Administrador' %}
           <div class="icon">
             <li>
@@ -32,7 +80,7 @@
             </li>
           </div>
           {% endif %}
-          
+
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
@@ -40,7 +88,7 @@
               </a>
             </li>
           </div>
-  
+
           {% if session['rol'] == 'Administrador' %}
           <div class="icon">
             <li>
@@ -49,7 +97,7 @@
               </a>
             </li>
           </div>
-  
+
           <div class="icon">
             <li>
               <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
@@ -60,124 +108,185 @@
           {% endif %}
         </ul>
       </div>
-  
+
       <div class="cerrar-icon">
         <a href="{{ url_for('auth.logout') }}">
           <i class="bi bi-arrow-right-circle"></i> Cerrar sesión
         </a>
       </div>
-      <img src="../../static/img/Kliiker-Logo.png" alt="Logo Kliiker" class="logo-header">
+      <img
+        src="../../static/img/Kliiker-Logo.png"
+        alt="Logo Kliiker"
+        class="logo-header"
+      />
     </div>
-  
+
     <!-- Contenido principal -->
     <div class="container-tables">
       <!-- Barra de búsqueda -->
       <div class="search-bar">
         <div class="search-group">
           <i class="bi bi-search"></i>
-          <input type="search" id="searchInput" placeholder="Buscar...">
+          <input type="search" id="searchInput" placeholder="Buscar..." />
         </div>
-        <img src="/static/img/AndesBPO-Logo.png" alt="Logo Andes">
+        <img src="/static/img/AndesBPO-Logo.png" alt="Logo Andes" />
       </div>
-  
 
-    <div class="container">
-      <div class="containerdb">
-        {% with messages = get_flashed_messages(with_categories=true) %} {% if
-        messages %}
-        <div class="upload-status {{ messages[0][0] }}">
-          {{ messages[0][1] }}
-        </div>
-        {% endif %} {% endwith %}
+      <div class="container">
+        <div class="containerdb">
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %}
+          <div class="upload-status {{ messages[0][0] }}">
+            {{ messages[0][1] }}
+          </div>
+          {% endif %} {% endwith %}
 
-        <div class="button-group">
-          <a
-            href="{{ url_for('administradores.descargar_gestion') }}"
-            class="btn btn-downloadGestion"
-          >
-            Descargar tarea del día
-          </a>
+          <div class="button-group">
+            <a
+              href="{{ url_for('administradores.download_today_work') }}"
+              class="btn btn-downloadGestion"
+            >
+              <i class="bi bi-download"></i> Descargar tarea del día
+            </a>
 
-          <button
-            class="btn btn-upload"
-            onclick="document.getElementById('file').click();"
-          >
-            Cargar base de datos
-          </button>
-        </div>
+            <a
+              class="btn btn-upload"
+              onclick="document.getElementById('csvFile').click();"
+            >
+              <i class="bi bi-upload"></i> Cargar base de datos
+            </a>
+          </div>
 
-        <div class="button-group">
-          <a
-            href="{{ url_for('administradores.descargar_gestion') }}"
-            class="btn btn-downloadGestion"
-          >
-            Descargar Gestión
-          </a>
-          <a
-            href="{{ url_for('administradores.descargar_historial') }}"
-            class="btn btn-downloadHistorial"
-          >
-            Descargar Historial
-          </a>
-        </div>
+          <div class="button-group">
+            <a
+              href="{{ url_for('administradores.descargar_gestion') }}"
+              class="btn btn-downloadGestion"
+            >
+              <i class="bi bi-download"></i> Descargar Gestión
+            </a>
+            <a
+              href="{{ url_for('administradores.descargar_historial') }}"
+              class="btn btn-downloadHistorial"
+            >
+              <i class="bi bi-download"></i> Descargar Historial
+            </a>
+          </div>
 
-        <form
-          id="uploadForm"
-          action="{{ url_for('administradores.subir_csv') }}"
-          method="POST"
-          enctype="multipart/form-data"
-        >
-          <input
-            type="file"
-            id="file"
-            name="file"
-            accept=".csv"
-            style="display: none"
-            onchange="document.getElementById('uploadForm').submit();"
-          />
-        </form>
+          <form id="uploadForm">
+            <input
+              type="file"
+              id="csvFile"
+              name="csvFile"
+              accept=".csv"
+              style="display: none"
+              onchange="handleFileUpload(this.files)"
+            />
+          </form>
 
-        <div class="file-list">
-          <h2>Archivos CSV Subidos</h2>
-          {% if databases %}
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for db in databases %}
-              <tr>
-                <td>{{ db.nombre }}</td>
-                <td>{{ db.date_upload.strftime('%Y-%m-%d %H:%M') }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <p>No hay archivos CSV subidos.</p>
-          {% endif %}
+          <div id="loadingIndicator">
+            <p>Procesando archivo, por favor espere...</p>
+            <div class="loader"></div>
+            <p id="progressText"></p>
+          </div>
+
+          <div class="file-list">
+            <h2>Archivos CSV Subidos</h2>
+            {% if databases %}
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Fecha</th>
+                  <th>Tamaño</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for db in databases %}
+                <tr>
+                  <td>{{ db.nombre }}</td>
+                  <td>{{ db.date_upload.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>{{ db.size|default('N/A') }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <p>No hay archivos CSV subidos.</p>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      // Manejo básico de errores y carga
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", function () {
-          document.querySelector(".loader").style.display = "block";
-        });
+      async function handleFileUpload(files) {
+        if (files.length === 0) return;
 
-      document.getElementById("file").addEventListener("change", function (e) {
-        const file = e.target.files[0];
-        if (file && file.size > 100 * 1024 * 1024) {
-          alert("Archivo demasiado grande. Máximo 100MB permitido");
-          this.value = "";
+        const file = files[0];
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+          alert("Por favor seleccione un archivo CSV");
+          return;
         }
-      });
+
+        // Mostrar indicador de carga
+        const loadingIndicator = document.getElementById("loadingIndicator");
+        const progressText = document.getElementById("progressText");
+        loadingIndicator.style.display = "block";
+        progressText.textContent = "Iniciando procesamiento...";
+
+        try {
+          const formData = new FormData();
+          formData.append("csvFile", file);
+
+          // Actualizar estado
+          progressText.textContent = "Subiendo archivo...";
+
+          const response = await fetch("/upload_process_csv", {
+            method: "POST",
+            body: formData,
+          });
+
+          // Actualizar estado
+          progressText.textContent = "Procesando archivo...";
+
+          const result = await response.json();
+
+          if (result.success) {
+            progressText.textContent = "Proceso completado con éxito!";
+            setTimeout(() => {
+              alert("Archivo procesado y datos importados exitosamente!");
+              window.location.reload();
+            }, 1000);
+          } else {
+            progressText.textContent = "Error en el procesamiento";
+            setTimeout(() => {
+              alert("Error: " + result.message);
+              loadingIndicator.style.display = "none";
+            }, 1000);
+          }
+        } catch (error) {
+          progressText.textContent = "Error en la conexión";
+          setTimeout(() => {
+            alert("Error: " + error.message);
+            loadingIndicator.style.display = "none";
+            window.location.reload(); // Forzar recarga
+          }, 1000);
+        }
+      }
+
+      // Opcional: Validar tamaño del archivo antes de subir
+      document
+        .getElementById("csvFile")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file && file.size > 100 * 1024 * 1024) {
+            // 100MB máximo
+            alert(
+              "El archivo es demasiado grande. Tamaño máximo permitido: 100MB"
+            );
+            this.value = "";
+          }
+        });
     </script>
   </body>
 </html>

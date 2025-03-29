@@ -109,10 +109,9 @@ body {
 
 /* Contenido principal */
 .container-tables {
-  grid-area: main;
+  margin-left: 250px; /* Igual al ancho del navbar */
   padding: 20px;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
+  min-height: 100vh;
 }
 
 /* Barra de búsqueda */

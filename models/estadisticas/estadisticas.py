@@ -47,8 +47,6 @@ def obtener_datos_estadisticas():
                 FROM gestiones g
                 # JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
                 WHERE g.id_tipificacion = 10
-                
-            
             """
         )
         datos_sinInteres = cursor.fetchall()
@@ -56,12 +54,13 @@ def obtener_datos_estadisticas():
         # Consulta Codigo
         cursor.execute(
             """
-            SELECT nivel, COUNT(*) as cantidadCodigos
+            SELECT 
+            SUM(CASE WHEN nivel = 1 THEN 1 ELSE 0 END) as con_codigo,
+            SUM(CASE WHEN nivel = 0 THEN 1 ELSE 0 END) as sin_codigo
             FROM kliiker
-            GROUP BY nivel
             """
         )
-        datos_codigo = cursor.fetchall()
+        datos_codigo = cursor.fetchone()
 
         # Consulta venta
         cursor.execute(
@@ -78,24 +77,24 @@ def obtener_datos_estadisticas():
         # Consulta RPC
         cursor.execute(
             """
-            SELECT t.rpc, COUNT(*) as cantidadRPC
+            SELECT COUNT(*) as rpc_exitosos
             FROM gestiones g
             JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
-            GROUP BY t.rpc
+            WHERE t.rpc = 1
         """
         )
-        datos_rpc = cursor.fetchall()
+        datos_rpc = cursor.fetchone()
 
         # Consulta Contactabilidad
         cursor.execute(
             """
-            SELECT t.contactabilidad, COUNT(*) as cantidadContac
+            SELECT COUNT(*) as cantidadContac
             FROM gestiones g
             JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
-            GROUP BY t.contactabilidad
+            WHERE t.contactabilidad = 1
         """
         )
-        datos_contactabilidad = cursor.fetchall()
+        datos_contactabilidad = cursor.fetchone()
 
         # Consulta total
         cursor.execute(
@@ -116,6 +115,7 @@ def obtener_datos_estadisticas():
         )
         datos_gestiones = cursor.fetchall()
 
+        # Sin Gestion
         cursor.execute(
             """
            SELECT COUNT(*) as cantidadSinGestion
@@ -129,6 +129,7 @@ def obtener_datos_estadisticas():
         )
         datos_sinGestion = cursor.fetchall()
 
+        # Cantidad Gestionados
         cursor.execute(
             """
             SELECT COUNT(*) AS cantidadGestionados
@@ -142,8 +143,76 @@ def obtener_datos_estadisticas():
         )
         datos_gestionados = cursor.fetchall()
 
+        # Gestiones Totales
         cursor.execute("SELECT COUNT(*) AS gestionesTotales FROM historial_gestiones")
         gestionesTotales = cursor.fetchall()
+
+        # Cierre Flujo
+        cursor.execute(
+            """
+            SELECT t.cierre_flujo, COUNT(*) AS cantCierreFlujo
+            FROM gestiones g              
+            JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion 
+            JOIN estadoKliiker e ON g.id_estado = e.id_estado
+            WHERE e.cierre_flujo = 1 OR t.cierre_flujo = 1;
+            """
+        )
+        datos_cierreFlujo = cursor.fetchall()
+
+        # Gestionables
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) as gestionables
+            FROM kliiker k
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM gestiones g
+                JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
+                WHERE g.celular = k.celular
+                AND t.tipificacion IN (
+                    'Sin interes', 
+                    'Equivocado', 
+                    'Interesado a futuro', 
+                    'Lead ya compro'
+                )
+            )
+            """
+        )
+        datos_gestionables = cursor.fetchall()
+
+        ventas_exitosas = (
+            datos_venta[0]["ventasExitosas"] if datos_venta and datos_venta[0] else 0
+        )
+        gestionados = (
+            datos_gestionados[0]["cantidadGestionados"]
+            if datos_gestionados and datos_gestionados[0]
+            else 0
+        )
+        rpc_exitosos = datos_rpc["rpc_exitosos"] if datos_rpc else 0
+
+        # Cálculos seguros
+        conversion = (ventas_exitosas / rpc_exitosos * 100) if rpc_exitosos > 0 else 0
+
+        efectividad = (ventas_exitosas / gestionados * 100) if gestionados > 0 else 0
+
+        gestiones_totales = (
+            gestionesTotales[0]["gestionesTotales"]
+            if gestionesTotales and gestionesTotales[0]
+            else 0
+        )
+
+        contactabilidad = (
+            datos_contactabilidad["cantidadContac"] if datos_contactabilidad else 0
+        )
+
+        contactabilidad_porcentaje = (
+            (contactabilidad / gestiones_totales * 100) if gestiones_totales > 0 else 0
+        )
+
+        rpc_porcentaje = (
+            (rpc_exitosos / gestiones_totales * 100) if gestiones_totales > 0 else 0
+        )
 
         # consulta gestionados
         # consulta registros
@@ -164,6 +233,8 @@ def obtener_datos_estadisticas():
         # print(datos_sinGestion)
         # print(datos_gestionados)
         # print(gestionesTotales)
+        # print(datos_cierreFlujo)
+        # print(datos_gestionables)
         cursor.close()
 
         return {
@@ -174,11 +245,23 @@ def obtener_datos_estadisticas():
             "ventas": datos_venta,
             "total_kliikers": datos_total,
             "cantidadGestiones": datos_gestiones,
-            "cantidadContac": datos_contactabilidad,
+            "contactabilidad": (
+                datos_contactabilidad["cantidadContac"] if datos_contactabilidad else 0
+            ),
             "sinInteres": datos_sinInteres,
             "sinGestion": datos_sinGestion,
             "gestionados": datos_gestionados,
             "gestionesTotales": gestionesTotales,
+            "cierreFlujo": datos_cierreFlujo,
+            "gestionables": datos_gestionables,
+            "efectividad": round(efectividad, 3),
+            "conversion": round(conversion, 3),
+            "ventas_exitosas": ventas_exitosas,
+            "rpc_exitosos": rpc_exitosos,
+            "gestionados_total": gestionados,
+            "contactabilidad_porcentaje": round(contactabilidad_porcentaje, 3),
+            "rpc_porcentaje": round(rpc_porcentaje, 3),
+            "gestiones_totales": gestiones_totales,
         }
     except MySQLdb.Error as e:
         print(f"Error de base de datos: {e}")
@@ -195,3 +278,6 @@ def obtener_datos():
 def mostrar_graficos():
     datos = obtener_datos_estadisticas()
     return render_template("estadisticas/estadisticas.html", datos=datos)
+
+
+# ------------------------------------------------------------------------------------------------------
