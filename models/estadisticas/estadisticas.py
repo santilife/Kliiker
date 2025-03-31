@@ -37,7 +37,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             
         # Filtro por estado
         estado_condition = ""
-        if estado and estado != "Seleccione":
+        if estado and estado != "Todo":
             if date_condition_gestiones:
                 estado_condition = " AND g.id_estado = %s "
             else:
@@ -46,7 +46,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             
         # Filtro por tipificación
         tipificacion_condition = ""
-        if tipificacion and tipificacion != "Seleccione":
+        if tipificacion and tipificacion != "Todo":
             if date_condition_gestiones or estado_condition:
                 tipificacion_condition = " AND g.id_tipificacion = %s "
             else:
@@ -55,9 +55,14 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             
         # Filtro por nivel (con código/sin código) para kliiker
         nivel_condition = ""
+        nivel_params = []
         if nivel:
+            # Adjust the nivel value for the query
+            # In the select, nivel=1 is "Con codigo" and nivel=0 is "Sin codigo"
+            # But in the dropdown, value 1 is "Con codigo" and value 2 is "Sin codigo"
+            nivel_value = 0 if nivel == "2" else 1
             nivel_condition = " WHERE nivel = %s "
-            params.append(nivel)
+            nivel_params.append(nivel_value)
         
         # Consulta para estados
         query_estados = """
@@ -105,8 +110,8 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             SUM(CASE WHEN nivel = 1 THEN 1 ELSE 0 END) as con_codigo,
             SUM(CASE WHEN nivel = 0 THEN 1 ELSE 0 END) as sin_codigo
             FROM kliiker
-            """ + nivel_condition
-        cursor.execute(query_codigo, params[-1:] if nivel else [])
+            """ + (nivel_condition if nivel else "")
+        cursor.execute(query_codigo, nivel_params)
         datos_codigo = cursor.fetchone()
 
         # Resto de consultas con filtros similares
@@ -120,7 +125,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             COUNT(CASE WHEN venta = 0 THEN 1 END) as sinVenta
             FROM kliiker
             """ + nivel_condition
-        cursor.execute(query_venta, params[-1:] if nivel else [])
+        cursor.execute(query_venta, nivel_params)
         datos_venta = cursor.fetchall()
 
         # Consulta RPC
@@ -166,7 +171,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
             SELECT COUNT(*) as total
             FROM kliiker
             """ + nivel_condition
-        cursor.execute(query_total, params[-1:] if nivel else [])
+        cursor.execute(query_total, nivel_params)
         datos_total = cursor.fetchall()
 
         # consulta de gestiones totales
@@ -212,7 +217,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
                     WHERE h.celular = k.celular
                 )
                 """
-        cursor.execute(query_sin_gestion, params[-1:] if nivel else [])
+        cursor.execute(query_sin_gestion, nivel_params)
         datos_sinGestion = cursor.fetchall()
 
         # Cantidad Gestionados
@@ -237,7 +242,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
                 WHERE h.celular = k.celular
                 )
                 """
-        cursor.execute(query_gestionados, params[-1:] if nivel else [])
+        cursor.execute(query_gestionados, nivel_params)
         datos_gestionados = cursor.fetchall()
 
         # Gestiones Totales
@@ -312,7 +317,7 @@ def obtener_datos_estadisticas(fecha_inicio=None, fecha_final=None, nivel=None, 
                     )
                 )
                 """
-        cursor.execute(query_gestionables, params[-1:] if nivel else [])
+        cursor.execute(query_gestionables, nivel_params)
         datos_gestionables = cursor.fetchall()
 
         ventas_exitosas = (
@@ -389,6 +394,12 @@ def obtener_datos():
     nivel = request.args.get('nivel')
     estado = request.args.get('estado')
     tipificacion = request.args.get('tipificacion')
+    
+    # Convertir "Todo" a None para que no se aplique el filtro
+    if estado == "Todo":
+        estado = None
+    if tipificacion == "Todo":
+        tipificacion = None
     
     datos = obtener_datos_estadisticas(fecha_inicio, fecha_final, nivel, estado, tipificacion)
     # Provide default empty data structure if datos is None
