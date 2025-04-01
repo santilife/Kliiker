@@ -1,452 +1,14 @@
-# import os
-# import csv
-# import io
-# from datetime import datetime, date
-# from flask import flash, make_response
-# from werkzeug.utils import secure_filename
-# from database.config import mysql
-
-# Mapeo de nombres de campos entre CSV y base de datos
-# FIELD_MAPPING = {
-# "id": "id_kliiker",
-# "client_id": "id_kliiker",
-# "phone": "celular",
-# "mobile": "celular",
-# "email": "correo",
-# "level": "nivel",
-# "fecha_gestion": "fecha",
-# "comment": "comentario",
-# "next_action": "fechaProximaGestion",
-# "user": "nombre_as",
-# "tipo_gestion": "tipoGestion",
-# "motivo": "motivoNoInteres",
-# }
-
-
-# class CSVProcessor:
-# """
-# Clase para procesar operaciones con archivos CSV incluyendo:
-# - Subida y procesamiento de datos
-# - Descarga de reportes
-# - Manejo de base de datos MySQL
-# """
-
-# def __init__(self, mysql):
-# """Inicializa con conexión MySQL"""
-# self.mysql = mysql
-
-# def smart_mapping(self, field_name):
-# """
-# Traduce nombres de columnas del CSV a nombres de campos de la base de datos
-# usando el mapeo FIELD_MAPPING como fallback
-# """
-# return FIELD_MAPPING.get(field_name.lower().strip(), field_name.lower().strip())
-
-# def allowed_file(self, filename):
-# """Valida extensiones de archivo permitidas (.csv)"""
-# return "." in filename and filename.rsplit(".", 1)[1].lower() in {"csv"}
-
-# def handle_upload(self, request):
-# """
-# Maneja el proceso completo de subida de archivos CSV:
-# 1. Validación de archivo
-# 2. Procesamiento en lotes
-# 3. Inserción en base de datos
-# 4. Manejo de transacciones
-# 5. Limpieza de archivos temporales
-# """
-## Validación inicial de archivo
-# if "file" not in request.files:
-# return {"status": "error", "message": "No se encontró el archivo"}
-
-# file = request.files["file"]
-# if file.filename == "":
-# return {"status": "error", "message": "Archivo no seleccionado"}
-
-# if not self.allowed_file(file.filename):
-# return {"status": "error", "message": "Tipo de archivo no permitido"}
-
-# try:
-# Configuración inicial de archivo
-# filename = secure_filename(file.filename)
-# filepath = os.path.join("dbUploaded", filename)
-# file.save(filepath)
-
-# cursor = self.mysql.connection.cursor()
-# batch_size = 1000  # Optimización para inserciones masivas
-# batch = []
-
-# Procesamiento del CSV
-# with open(filepath, "r", encoding="utf-8") as csvfile:
-# csv_reader = csv.DictReader(csvfile)
-# Aplicar mapeo inteligente a los nombres de columna
-# fieldnames = [
-# self.smart_mapping(fn.strip()) for fn in csv_reader.fieldnames
-# ]
-
-# for row in csv_reader:
-# processed = self.process_row(row)
-# if not self.validate_kliiker(processed):
-# flash(f"Registro inválido: {processed}", "warning")
-# continue
-
-# batch.append(processed)
-# Inserta por lotes para mejor performance
-# if len(batch) >= batch_size:
-# self.insert_batch(cursor, batch)
-# batch = []
-
-# Insertar datos restantes
-# if batch:
-# self.insert_batch(cursor, batch)
-
-# Registrar subida en base de datos
-# cursor.execute(
-# "INSERT INTO uploaded_db (nombre, date_upload) VALUES (%s, %s)",
-# (filename, datetime.now()),
-# )
-# self.mysql.connection.commit()
-# return {"status": "success", "message": "Archivo procesado exitosamente!"}
-
-# except Exception as e:
-# self.mysql.connection.rollback()
-# return {"status": "error", "message": f"Error procesando archivo: {str(e)}"}
-# finally:
-# Limpieza de recursos
-# if "cursor" in locals():
-# cursor.close()
-# if os.path.exists(filepath):
-# os.remove(filepath)
-
-# def process_row(self, raw_row):
-# """
-# Procesamiento avanzado de filas:
-# - Conversión de tipos de datos
-# - Formateo de fechas múltiples
-# - Limpieza de espacios
-# - Manejo de valores nulos
-# """
-# processed = {
-# self.smart_mapping(k): v.strip() if v else None for k, v in raw_row.items()
-# }
-
-# Sistema de conversión de tipos de datos
-# conversions = {
-# "nivel": int,
-# "venta": lambda x: bool(int(x)) if x else False,
-# "gestionable": lambda x: bool(int(x)) if x else False,
-# "id_estado": lambda x: int(x) if x else None,
-# "id_tipificacion": lambda x: int(x) if x else None,
-# "diaSinGestion": lambda x: int(x) if x else None,
-# }
-
-# Aplicar conversiones
-# for field, converter in conversions.items():
-# if field in processed:
-# try:
-# processed[field] = (
-# converter(processed[field]) if processed[field] else None
-# )
-# except (ValueError, TypeError):
-# processed[field] = None
-
-# Sistema de parseo de fechas con múltiples formatos
-# date_fields = [
-# "fecha",
-# "fechaIngreso",
-# "fechaSinGestion",
-# "fechaProximaGestion",
-# ]
-# date_formats = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"]
-
-# for field in date_fields:
-# if processed.get(field):
-# for fmt in date_formats:
-# try:
-# processed[field] = datetime.strptime(
-# processed[field], fmt
-# ).date()
-# break
-# except (ValueError, TypeError):
-# continue
-# else:
-# processed[field] = None
-
-# return processed
-
-# def validate_kliiker(self, row):
-# """Valida campos obligatorios para inserción en base de datos"""
-# required_fields = ["id_kliiker", "nombre", "celular"]
-# return all(row.get(field) for field in required_fields)
-
-# def insert_batch(self, cursor, batch):
-# """
-# Inserta lotes de datos con actualización de duplicados
-# Usa transacciones para mejor performance
-# """
-# cursor.executemany(
-# """
-# INSERT INTO kliiker (
-# id_Kliiker, nombre, apellido, celular, nivel, correo,
-# fecha, venta, fechaIngreso, diaSinGestion,
-# gestionable, id_estado, fechaSinGestion
-# ) VALUES (
-# %(id_Kliiker)s, %(nombre)s, %(apellido)s, %(celular)s,
-# %(nivel)s, %(correo)s, %(fecha)s, %(venta)s,
-# %(fechaIngreso)s, %(diaSinGestion)s, %(gestionable)s,
-# %(id_estado)s, %(fechaSinGestion)s
-# )
-# ON DUPLICATE KEY UPDATE
-# nombre = VALUES(nombre),
-# apellido = VALUES(apellido),
-# correo = VALUES(correo),
-# id_estado = VALUES(id_estado)
-# """,
-# batch,
-# )
-# self.mysql.connection.commit()
-
-# def download_gestion(self):
-# """
-# Genera reporte CSV completo de gestiones con:
-# - Datos de tablas relacionadas
-# - Formato consistente
-# - Manejo de errores
-# """
-# try:
-# cursor = self.mysql.connection.cursor()
-# cursor.execute(
-# """
-# SELECT g.*, e.estado, t.tipificacion
-# FROM gestiones g
-# LEFT JOIN estadoKliiker e ON g.id_estado = e.id_estado
-# LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
-# """
-# )
-
-# Configuración de CSV
-# column_names = [i[0] for i in cursor.description]
-# rows = cursor.fetchall()
-# output = io.StringIO()
-# writer = csv.writer(output, delimiter=";")
-
-# Escritura de datos
-# writer.writerow(column_names)
-# for row in rows:
-# writer.writerow(
-# [
-# str(row[column]) if row[column] is not None else ""
-# for column in column_names
-# ]
-# )
-
-# output.seek(0)
-# response = make_response(output.getvalue())
-# response.headers["Content-Disposition"] = (
-#'attachment; filename="gestiones_completo.csv"'
-# )
-# response.headers["Content-type"] = "text/csv"
-# return response
-
-# except Exception as e:
-# return make_response("Error al generar el CSV", 500)
-# finally:
-# if "cursor" in locals():
-# cursor.close()
-
-# def download_historial(self):
-# """
-# Genera reporte CSV del historial de gestiones con:
-# - Datos de múltiples tablas relacionadas
-# - Formato compatible con Excel
-# - Codificación UTF-8
-# """
-# try:
-# cursor = self.mysql.connection.cursor()
-# cursor.execute(
-# """
-# SELECT h.*, e.estado
-# FROM historial_gestiones h
-# LEFT JOIN kliiker k ON h.celular = k.celular
-# LEFT JOIN usuarios u ON h.nombre_AS = u.nombre_AS
-# LEFT JOIN estadoKliiker e ON h.id_estado = e.id_estado
-# LEFT JOIN tipificacion t ON h.id_tipificacion = t.id_tipificacion
-# """
-# )
-
-# Configuración de CSV
-# column_names = [i[0] for i in cursor.description]
-# rows = cursor.fetchall()
-# output = io.StringIO()
-# writer = csv.writer(output, delimiter=";")
-
-# Escritura de datos
-# writer.writerow(column_names)
-# for row in rows:
-# writer.writerow(
-# [
-# str(row[column]) if row[column] is not None else ""
-# for column in column_names
-# ]
-# )
-
-# Generación de respuesta
-# output.seek(0)
-# filename = f"Historial_{datetime.now().strftime('%Y-%m-%d')}.csv"
-# response = make_response(output.getvalue())
-# response.headers["Content-Disposition"] = (
-# f'attachment; filename="{filename}"'
-# )
-# response.headers["Content-type"] = "text/csv"
-# return response
-
-# except Exception as e:
-# return make_response("Error al generar el historial", 500)
-# finally:
-# if "cursor" in locals():
-# cursor.close()
-
-# def get_uploaded_files(self):
-# """Obtiene listado de archivos subidos desde la base de datos"""
-# try:
-# cursor = self.mysql.connection.cursor()
-# cursor.execute("SELECT * FROM uploaded_db ORDER BY date_upload DESC")
-# return cursor.fetchall()
-# except Exception as e:
-# return []
-# finally:
-# if "cursor" in locals():
-# cursor.close()
-
-# def download_work_day(self):
-# """
-# Descargar la tarea del dia
-# - Datos de múltiples tablas relacionadas
-# - Formato compatible con Excel
-# - Codificación UTF-8
-# """
-# try:
-# cursor = self.mysql.connection.cursor()
-# cursor.execute(
-# """
-# SELECT k.*, g.fechaProximaGestion, t.cierre_flujo
-# FROM kliiker k
-# LEFT JOIN (
-# SELECT celular, MAX(fecha) as ultima_fecha
-# FROM gestiones
-# GROUP BY celular
-# ) ult_g ON k.celular = ult_g.celular
-# LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
-# LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
-# """
-# )
-
-# Configuración de CSV
-# column_names = [i[0] for i in cursor.description]
-# rows = cursor.fetchall()
-# output = io.StringIO()
-# writer = csv.writer(output, delimiter=";")
-
-# Escritura de datos
-# writer.writerow(column_names)
-# for row in rows:
-# writer.writerow(
-# [
-# str(row[column]) if row[column] is not None else ""
-# for column in column_names
-# ]
-# )
-
-# Generación de respuesta
-# output.seek(0)
-# filename = f"Tarea_Para_El_{datetime.now().strftime('%Y-%m-%d')}.csv"
-# response = make_response(output.getvalue())
-# response.headers["Content-Disposition"] = (
-# f'attachment; filename="{filename}"'
-# )
-# response.headers["Content-type"] = "text/csv"
-# return response
-
-# except Exception as e:
-# return make_response("Error al generar la tarea del dia", 500)
-# finally:
-# if "cursor" in locals():
-# cursor.close()
-
-# def validar_logica_kliiker(self):
-# """
-# Lógica de validación para Kliiker:
-# 1. Si gestionable es 0, no se validan los otros puntos.
-# 2. Si cierre_flujo es 1, retorna False.
-# 3. Si diasSinGestion >= diasParaGestion, retorna True.
-# 4. Si fechaProximaGestion es None o igual a hoy, retorna True.
-# """
-# try:
-# cursor = self.mysql.connection.cursor(dictionary=True)
-#
-## Obtener todos los registros de kliiker con sus relaciones
-# cursor.execute(
-# """
-# SELECT k.*, f.diasParaGestion, g.fechaProximaGestion, t.cierre_flujo
-# FROM kliiker k
-# LEFT JOIN flujotrabajo f ON k.id_estado = f.id_estado
-# LEFT JOIN (
-# SELECT celular, MAX(fecha) as ultima_fecha
-# FROM gestiones
-# GROUP BY celular
-# ) ult_g ON k.celular = ult_g.celular
-# LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
-# LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
-# """
-# )
-
-# resultados = []
-
-# for registro in cursor.fetchall():
-# Punto 1: Validar gestiónable
-# if registro.get("gestionable") == 0:
-# resultados.append(False)
-# continue
-
-# Punto 2: Validar cierre de flujo
-# if registro.get("cierre_flujo") == 1:
-# resultados.append(False)
-# continue
-
-# Punto 3: Validar días sin gestión
-# dias_sin_gestion = registro.get("diaSinGestion") or 0
-# dias_requeridos = registro.get("diasParaGestion") or 0
-
-# if dias_sin_gestion < dias_requeridos:
-# resultados.append(False)
-# continue
-
-# Punto 4: Validar fecha próxima gestión
-# fecha_proxima = registro.get("fechaProximaGestion")
-# hoy = date.today()
-
-# if not fecha_proxima:
-# resultados.append(True)
-# else:
-# resultados.append(fecha_proxima == hoy)
-
-# return resultados
-
-# except Exception as e:
-# print(f"Error al validar la lógica: {e}")
-# return []
-# finally:
-# if "cursor" in locals():
-# cursor.close()
-
+import io
 import os
 import csv
-import io
+import json
+import random
 from datetime import datetime, date
 from flask import flash, make_response
 from werkzeug.utils import secure_filename
 from database.config import mysql
 
+# Mapeo de nombres de campos
 FIELD_MAPPING = {
     "id": "id_kliiker",
     "client_id": "id_kliiker",
@@ -462,18 +24,49 @@ FIELD_MAPPING = {
     "motivo": "motivoNoInteres",
 }
 
+UPLOAD_FOLDER = "dbUploaded"
+ALLOWED_EXTENSIONS = {"csv"}
+
 
 class CSVProcessor:
     def __init__(self, mysql):
         self.mysql = mysql
+        # Asegurar que el directorio de upload existe
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
     def smart_mapping(self, field_name):
         return FIELD_MAPPING.get(field_name.lower().strip(), field_name.lower().strip())
 
     def allowed_file(self, filename):
-        return "." in filename and filename.rsplit(".", 1)[1].lower() in {"csv"}
+        return (
+            "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+        )
 
-    def handle_upload(self, request):
+    def csv_to_json(self, csv_path):
+        """Convierte un archivo CSV a JSON con limpieza de datos"""
+        try:
+            with open(csv_path, "r", encoding="utf-8") as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=";")
+                # Normalizar nombres de columnas
+                fieldnames = [
+                    self.smart_mapping(fn.strip()) for fn in reader.fieldnames
+                ]
+                reader.fieldnames = fieldnames
+
+                data = [row for row in reader]
+
+                json_filename = f"temp_{random.randint(1000,9999)}.json"
+                json_path = os.path.join(UPLOAD_FOLDER, json_filename)
+
+                with open(json_path, "w", encoding="utf-8") as jsonfile:
+                    json.dump(data, jsonfile, indent=4, ensure_ascii=False)
+
+                return json_path
+        except Exception as e:
+            raise Exception(f"Error en conversión CSV a JSON: {str(e)}")
+
+    def handle_csv_upload(self, request):
+        """Maneja todo el proceso de carga: CSV -> JSON -> MySQL"""
         if "file" not in request.files:
             return {"status": "error", "message": "No se encontró el archivo"}
 
@@ -482,66 +75,81 @@ class CSVProcessor:
             return {"status": "error", "message": "Archivo no seleccionado"}
 
         if not self.allowed_file(file.filename):
-            return {"status": "error", "message": "Tipo de archivo no permitido"}
+            return {
+                "status": "error",
+                "message": "Solo se permiten archivos CSV (.csv)",
+            }
+
+        csv_path = None
+        json_path = None
+        cursor = None
 
         try:
-            # Conservar nombre original y crear versión segura
-            original_filename = file.filename
-            safe_filename = secure_filename(original_filename)
+            # 1. Guardar CSV temporalmente
+            filename = secure_filename(file.filename)
+            csv_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(csv_path)
 
-            # Configurar directorio de subida
-            upload_folder = "dbUploaded"
-            os.makedirs(upload_folder, exist_ok=True)
+            # 2. Convertir a JSON
+            json_path = self.csv_to_json(csv_path)
 
-            filepath = os.path.join(upload_folder, safe_filename)
-            file.save(filepath)
+            # 3. Procesar JSON e insertar en MySQL
+            with open(json_path, "r", encoding="utf-8") as jsonfile:
+                data = json.load(jsonfile)
 
-            cursor = self.mysql.connection.cursor()
-            batch_size = 1000
-            batch = []
+                cursor = self.mysql.connection.cursor()
+                batch_size = 1000
+                batch = []
+                total_registros = 0
 
-            with open(filepath, "r", encoding="utf-8") as csvfile:
-                csv_reader = csv.DictReader(csvfile)
-                fieldnames = [
-                    self.smart_mapping(fn.strip()) for fn in csv_reader.fieldnames
-                ]
-
-                for row in csv_reader:
+                for row in data:
                     processed = self.process_row(row)
                     if not self.validate_kliiker(processed):
-                        flash(f"Registro inválido: {processed}", "warning")
                         continue
 
                     batch.append(processed)
                     if len(batch) >= batch_size:
                         self.insert_batch(cursor, batch)
+                        total_registros += len(batch)
                         batch = []
 
                 if batch:
                     self.insert_batch(cursor, batch)
+                    total_registros += len(batch)
 
-            # Guardar nombre original en la base de datos
-            cursor.execute(
-                "INSERT INTO uploaded_db (nombre, date_upload) VALUES (%s, %s)",
-                (original_filename, datetime.now()),
-            )
-            self.mysql.connection.commit()
-            return {"status": "success", "message": "Archivo procesado exitosamente!"}
+                # Registrar en uploaded_db
+                cursor.execute(
+                    "INSERT INTO uploaded_db (nombre, date_upload) VALUES (%s, %s)",
+                    (filename, datetime.now()),
+                )
+                self.mysql.connection.commit()
+
+            return {
+                "status": "success",
+                "message": f"Archivo procesado correctamente. {total_registros} registros insertados/actualizados",
+            }
 
         except Exception as e:
-            self.mysql.connection.rollback()
-            return {"status": "error", "message": f"Error procesando archivo: {str(e)}"}
+            if cursor and self.mysql.connection:
+                self.mysql.connection.rollback()
+            return {"status": "error", "message": f"Error en procesamiento: {str(e)}"}
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            # Limpieza de archivos temporales
+            if csv_path and os.path.exists(csv_path):
+                os.remove(csv_path)
+            if json_path and os.path.exists(json_path):
+                os.remove(json_path)
 
     def process_row(self, raw_row):
+        """Procesamiento avanzado de filas con conversión de tipos"""
         processed = {
-            self.smart_mapping(k): v.strip() if v else None for k, v in raw_row.items()
+            self.smart_mapping(k): v.strip() if isinstance(v, str) else v
+            for k, v in raw_row.items()
         }
 
+        # Conversión de tipos de datos
         conversions = {
             "nivel": int,
             "venta": lambda x: bool(int(x)) if x else False,
@@ -555,11 +163,14 @@ class CSVProcessor:
             if field in processed:
                 try:
                     processed[field] = (
-                        converter(processed[field]) if processed[field] else None
+                        converter(processed[field])
+                        if processed[field] is not None
+                        else None
                     )
                 except (ValueError, TypeError):
                     processed[field] = None
 
+        # Formateo de fechas
         date_fields = [
             "fecha",
             "fechaIngreso",
@@ -573,7 +184,7 @@ class CSVProcessor:
                 for fmt in date_formats:
                     try:
                         processed[field] = datetime.strptime(
-                            processed[field], fmt
+                            str(processed[field]), fmt
                         ).date()
                         break
                     except (ValueError, TypeError):
@@ -584,10 +195,12 @@ class CSVProcessor:
         return processed
 
     def validate_kliiker(self, row):
+        """Valida campos obligatorios para inserción"""
         required_fields = ["id_kliiker", "nombre", "celular"]
         return all(row.get(field) for field in required_fields)
 
     def insert_batch(self, cursor, batch):
+        """Inserta lotes de datos con manejo de duplicados"""
         cursor.executemany(
             """
             INSERT INTO kliiker (
@@ -611,6 +224,8 @@ class CSVProcessor:
         self.mysql.connection.commit()
 
     def download_gestion(self):
+        """Genera reporte CSV de gestiones"""
+        cursor = None
         try:
             cursor = self.mysql.connection.cursor()
             cursor.execute(
@@ -646,20 +261,20 @@ class CSVProcessor:
             return response
 
         except Exception as e:
-            return make_response("Error al generar el CSV", 500)
+            return make_response(f"Error al generar el reporte: {str(e)}", 500)
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
 
     def download_historial(self):
+        """Genera reporte CSV del historial"""
+        cursor = None
         try:
             cursor = self.mysql.connection.cursor()
             cursor.execute(
                 """
-                SELECT h.*, e.estado
+                SELECT h.*, e.estado, t.tipificacion
                 FROM historial_gestiones h
-                LEFT JOIN kliiker k ON h.celular = k.celular
-                LEFT JOIN usuarios u ON h.nombre_AS = u.nombre_AS
                 LEFT JOIN estadoKliiker e ON h.id_estado = e.id_estado
                 LEFT JOIN tipificacion t ON h.id_tipificacion = t.id_tipificacion
                 """
@@ -689,36 +304,66 @@ class CSVProcessor:
             return response
 
         except Exception as e:
-            return make_response("Error al generar el historial", 500)
+            return make_response(f"Error al generar el historial: {str(e)}", 500)
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
 
     def get_uploaded_files(self):
+        """Obtiene listado de archivos subidos"""
+        cursor = None
         try:
             cursor = self.mysql.connection.cursor()
             cursor.execute("SELECT * FROM uploaded_db ORDER BY date_upload DESC")
             return cursor.fetchall()
         except Exception as e:
+            print(f"Error al obtener archivos subidos: {str(e)}")
             return []
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
 
     def download_work_day(self):
+        """Genera CSV con la tarea del día"""
+        cursor = None
         try:
             cursor = self.mysql.connection.cursor()
             cursor.execute(
                 """
-                   SELECT k.*, g.fechaProximaGestion, t.cierre_flujo 
-                   FROM kliiker k
-                   LEFT JOIN (
-                       SELECT celular, MAX(fecha) as ultima_fecha 
-                       FROM gestiones 
-                       GROUP BY celular
-                   ) ult_g ON k.celular = ult_g.celular
-                   LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
-                   LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
+                SELECT 
+                    k.id_Kliiker AS id_cliente,
+                    k.nombre,
+                    k.apellido,
+                    k.celular,
+                    k.correo,
+                    k.nivel,
+                    g.fechaProximaGestion,
+                    t.tipificacion
+                FROM kliiker k
+                LEFT JOIN (
+                    SELECT celular, MAX(fecha) as ultima_fecha 
+                    FROM gestiones 
+                    GROUP BY celular
+                ) ult_g ON k.celular = ult_g.celular
+                LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
+                LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
+                WHERE 
+                    (k.venta = 0 OR k.venta IS NULL)
+                    AND (k.gestionable = 1 OR k.gestionable IS NULL)
+                    AND (
+                        g.id_gestion IS NULL
+                        OR (
+                            COALESCE(t.cierre_flujo, 0) = 0
+                            AND (
+                                g.fechaProximaGestion = CURDATE()
+                                OR (
+                                    k.diaSinGestion IS NOT NULL 
+                                    AND k.fechaSinGestion IS NOT NULL
+                                    AND DATEDIFF(CURDATE(), k.fechaSinGestion) >= k.diaSinGestion
+                                )
+                            )
+                        )
+                    )
                 """
             )
 
@@ -746,31 +391,37 @@ class CSVProcessor:
             return response
 
         except Exception as e:
-            return make_response("Error al generar la tarea del dia", 500)
+            return make_response(f"Error al generar la tarea: {str(e)}", 500)
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
 
     def validar_logica_kliiker(self):
+        """Valida la lógica de gestión para cada registro"""
+        cursor = None
         try:
             cursor = self.mysql.connection.cursor(dictionary=True)
-
             cursor.execute(
                 """
-                   SELECT k.*, f.diasParaGestion, g.fechaProximaGestion, t.cierre_flujo 
-                   FROM kliiker k
-                   LEFT JOIN flujotrabajo f ON k.id_estado = f.id_estado
-                   LEFT JOIN (
-                       SELECT celular, MAX(fecha) as ultima_fecha 
-                       FROM gestiones 
-                       GROUP BY celular
-                   ) ult_g ON k.celular = ult_g.celular
-                   LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
-                   LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
-               """
+                SELECT 
+                    k.*, 
+                    f.diasParaGestion, 
+                    g.fechaProximaGestion, 
+                    t.cierre_flujo
+                FROM kliiker k
+                LEFT JOIN flujotrabajo f ON k.id_estado = f.id_estado
+                LEFT JOIN (
+                    SELECT celular, MAX(fecha) as ultima_fecha 
+                    FROM gestiones 
+                    GROUP BY celular
+                ) ult_g ON k.celular = ult_g.celular
+                LEFT JOIN gestiones g ON ult_g.celular = g.celular AND ult_g.ultima_fecha = g.fecha
+                LEFT JOIN tipificacion t ON g.id_tipificacion = t.id_tipificacion
+                """
             )
 
             resultados = []
+            hoy = date.today()
 
             for registro in cursor.fetchall():
                 if registro.get("gestionable") == 0:
@@ -789,8 +440,6 @@ class CSVProcessor:
                     continue
 
                 fecha_proxima = registro.get("fechaProximaGestion")
-                hoy = date.today()
-
                 if not fecha_proxima:
                     resultados.append(True)
                 else:
@@ -799,8 +448,8 @@ class CSVProcessor:
             return resultados
 
         except Exception as e:
-            print(f"Error al validar la lógica: {e}")
+            print(f"Error en validación: {str(e)}")
             return []
         finally:
-            if "cursor" in locals():
+            if cursor:
                 cursor.close()
