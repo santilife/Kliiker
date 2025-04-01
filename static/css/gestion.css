@@ -658,3 +658,68 @@ button[type="submit"]:hover {
     width: 90%;
   }
 }
+
+/* Estilos para las alertas de gestiones */
+.alertas-gestiones {
+  margin: 15px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+
+.alertas-gestiones h4 {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+}
+
+.alertas-gestiones h4 i {
+  margin-right: 10px;
+}
+
+.alertas-gestiones ul {
+  margin-bottom: 10px;
+  padding-left: 25px;
+}
+
+.alertas-gestiones .btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.alertas-gestiones .btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.alertas-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.alertas-container.show {
+  max-height: 500px;
+}
+
+.alertas-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alertas-toggle i.toggle-icon {
+  transition: transform 0.3s;
+}
+
+.alertas-toggle.active i.toggle-icon {
+  transform: rotate(180deg);
+}

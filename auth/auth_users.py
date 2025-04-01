@@ -17,9 +17,9 @@ import os
 import subprocess
 from models.mostrar.view_kliikers import mostrar_tabla
 from database.config import mysql
-from werkzeug.security import check_password_hash
 from auth.decorators import login_required, role_required
 from models.descargarDB.downloadDB import CSVProcessor
+from models.estadisticas.estadisticas import mostrar_graficos
 
 csv_processor = CSVProcessor(mysql)
 
@@ -63,7 +63,7 @@ def api_tipificaciones():
 @login_required
 @role_required("Administrador")
 def admin():
-    return mostrar_tabla()
+    return mostrar_graficos()
 
 
 # Rutas para gestión de base de datos
@@ -78,7 +78,7 @@ def downloadDB():
 # ------------- Rutas para la carga y descarga de bases de datos ------------- #
 @administradores.route("/uploadDB", methods=["POST"])
 def subir_csv():
-    result = csv_processor.handle_upload(request)
+    result = csv_processor.handle_csv_upload(request)
     flash(result["message"], result["status"])
     return redirect(url_for("administradores.downloadDB"))
 
@@ -118,19 +118,36 @@ def upload_and_process_csv():
         temp_dir = "temp_uploads"
         os.makedirs(temp_dir, exist_ok=True)
         temp_csv_path = os.path.join(
-            temp_dir, f"upload_{datetime.now().strftime('%Y%m%d%H%M%S')}.csv"
+            temp_dir, f"upload_{datetime.now().strftime('%Y%m%d')}.csv"
         )
         file.save(temp_csv_path)
 
+        # Registrar en base de datos ANTES de eliminar el archivo
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute(
+                "INSERT INTO uploaded_db (nombre, date_upload, size) VALUES (%s, %s, %s)",
+                (
+                    file.filename,
+                    datetime.now(),
+                    os.path.getsize(temp_csv_path),  # Obtener tamaño aquí
+                ),
+            )
+            mysql.connection.commit()
+            app.logger.info("Registro en uploaded_db exitoso")
+
+        except Exception as e:
+            app.logger.error(f"Error registrando en DB: {str(e)}")
+            mysql.connection.rollback()
+            raise  # Relanzar excepción
+
         # MODIFICACIÓN 1: Generar nombre del JSON con ruta absoluta
-        json_file = os.path.abspath(
-            f"Kliiker_{datetime.now().strftime('%d-%m-%Y')}.json"
-        )
+        json_file = os.path.abspath(f"Kliiker_{datetime.now().strftime('%Y%m%d')}.json")
 
         # Convertir CSV a JSON
         try:
             conversion_result = subprocess.run(
-                ["python", "script_csv-json.py", temp_csv_path],
+                ["python", "script_csv-json.py"],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -145,7 +162,7 @@ def upload_and_process_csv():
         # MODIFICACIÓN 2: Pasar la ruta del JSON al script de importación
         try:
             import_result = subprocess.run(
-                ["python", "script_importar.py", json_file],  # <- Ruta dinámica
+                ["python", "script_importar.py"],  # <- Ruta dinámica
                 capture_output=True,
                 text=True,
                 check=True,
@@ -156,19 +173,6 @@ def upload_and_process_csv():
             error_msg = f"Error en importación: {e.stderr}"
             app.logger.error(error_msg)
             return jsonify({"success": False, "message": error_msg}), 500
-
-        # Registrar en base de datos
-        try:
-            cur = mysql.connection.cursor()
-            cur.execute(
-                "INSERT INTO uploaded_db (nombre, date_upload, size) VALUES (%s, %s, %s)",
-                (file.filename, datetime.now(), os.path.getsize(temp_csv_path)),
-            )
-            mysql.connection.commit()
-
-        except Exception as e:
-            app.logger.error(f"Error registrando en DB: {str(e)}")
-            mysql.connection.rollback()
 
         # MODIFICACIÓN 3: Limpieza de archivos temporales
         finally:
@@ -191,6 +195,22 @@ def upload_and_process_csv():
     except Exception as e:
         app.logger.error(f"Error inesperado: {str(e)}")
         return jsonify({"success": False, "message": f"Error: {str(e)}"}), 500
+
+    finally:
+        # Limpieza de archivos temporales DESPUÉS de todo el procesamiento
+        if temp_csv_path and os.path.exists(temp_csv_path):
+            try:
+                os.remove(temp_csv_path)
+                app.logger.info(f"Archivo temporal {temp_csv_path} eliminado")
+            except Exception as e:
+                app.logger.error(f"Error eliminando CSV temporal: {str(e)}")
+
+        if json_file and os.path.exists(json_file):
+            try:
+                os.remove(json_file)
+                app.logger.info(f"Archivo JSON {json_file} eliminado")
+            except Exception as e:
+                app.logger.error(f"Error eliminando JSON: {str(e)}")
 
 
 @administradores.route("/descargar/historial")
