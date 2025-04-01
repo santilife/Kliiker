@@ -1,204 +1,199 @@
 <!-- estadisticas.html -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Estadísticas en Tiempo Real</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" href="../../static/css/estadisticas.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-  </head>
-  <body>
-    <!-- Navbar -->
-    <div class="navbar-custom" id="navbar">
-      <div class="iconos">
-        <ul>
-          <span class="user">
-            <i class="bi bi-person-circle"></i><br />
-            Hola {{session["usuario"]}} ({{session["rol"]}})
-          </span>
 
-          {% if session['rol'] == 'Administrador' %}
-          <div class="icon">
-            <li>
-              <a href="{{url_for('estadisticas.mostrar_graficos')}}">
-                <i class="bi bi-bar-chart"></i>Estadísticas
-              </a>
-            </li>
-          </div>
-          {% endif %}
+<head>
+  <title>Estadísticas en Tiempo Real</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="../../static/css/estadisticas.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+</head>
 
-          <div class="icon">
-            <li>
-              <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
-                <i class="bi bi-folder2"></i>Gestión
-              </a>
-            </li>
-          </div>
+<body>
+  <!-- Navbar -->
+  <div class="navbar-custom" id="navbar">
+    <div class="iconos">
+      <ul>
+        <span class="user">
+          <i class="bi bi-person-circle"></i><br />
+          Hola {{session["usuario"]}} ({{session["rol"]}})
+        </span>
 
-          {% if session['rol'] == 'Administrador' %}
-          <div class="icon">
-            <li>
-              <a href="{{url_for('administradores.downloadDB')}}">
-                <i class="bi bi-file-earmark-text"></i>Administrativo
-              </a>
-            </li>
-          </div>
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('estadisticas.mostrar_graficos')}}">
+              <i class="bi bi-bar-chart"></i>Estadísticas
+            </a>
+          </li>
+        </div>
+        {% endif %}
 
-          <div class="icon">
-            <li>
-              <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
-                <i class="bi bi-person"></i>Asesor
-              </a>
-            </li>
-          </div>
-          {% endif %}
-        </ul>
-      </div>
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_tablas.mostrar_tabla')}}">
+              <i class="bi bi-folder2"></i>Gestión
+            </a>
+          </li>
+        </div>
 
-      <div class="cerrar-icon">
-        <a href="{{ url_for('auth.logout') }}">
-          <i class="bi bi-arrow-right-circle"></i> Cerrar sesión
-        </a>
-      </div>
-      <img
-        src="../../static/img/Kliiker-Logo.png"
-        alt="Logo Kliiker"
-        class="logo-header"
-      />
+        {% if session['rol'] == 'Administrador' %}
+        <div class="icon">
+          <li>
+            <a href="{{url_for('administradores.downloadDB')}}">
+              <i class="bi bi-file-earmark-text"></i>Administrativo
+            </a>
+          </li>
+        </div>
+
+        <div class="icon">
+          <li>
+            <a href="{{url_for('mostrar_asesores_tables.mostrar_asesores')}}">
+              <i class="bi bi-person"></i>Asesor
+            </a>
+          </li>
+        </div>
+        {% endif %}
+      </ul>
     </div>
 
-    <!-- Contenedor principal -->
-    <div class="container">
-      <!-- Sección de totales -->
-      <div class="totales">
-        <section class="totales-individuales">
-          <!-- Ventas -->
-          {% if datos.ventas %} {% for ventas in datos.ventas %}
-          <div class="total-ventas tarjeta-individual">
-            <div class="tarjeta-container-ventas">
-              <h4>Ventas</h4>
-              <p>{{ ventas.ventasExitosas }}</p>
+    <div class="cerrar-icon">
+      <a href="{{ url_for('auth.logout') }}">
+        <i class="bi bi-arrow-right-circle"></i> Cerrar sesión
+      </a>
+    </div>
+    <img src="../../static/img/Kliiker-Logo.png" alt="Logo Kliiker" class="logo-header" />
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="container">
+    <!-- Sección de totales -->
+    <div class="totales">
+      <section class="totales-individuales">
+        <!-- Ventas -->
+        {% if datos.ventas %} {% for ventas in datos.ventas %}
+        <div class="total-ventas tarjeta-individual">
+          <div class="tarjeta-container-ventas">
+            <h4>Ventas</h4>
+            <p>{{ ventas.ventasExitosas }}</p>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="total-ventas tarjeta-individual">
+          <div class="tarjeta-container-ventas">
+            <h4>Ventas</h4>
+            <p>0</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Gestiones Totales -->
+        {% if datos.gestionesTotales %} {% for cantidad in
+        datos.gestionesTotales %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica1">
+              <h4>Gestiones Totales</h4>
+              <p>{{ cantidad.gestionesTotales }}</p>
             </div>
           </div>
-          {% endfor %} {% else %}
-          <div class="total-ventas tarjeta-individual">
-            <div class="tarjeta-container-ventas">
-              <h4>Ventas</h4>
+        </div>
+        {% endfor %} {% else %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica1">
+              <h4>Gestiones Totales</h4>
               <p>0</p>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Gestiones Totales -->
-          {% if datos.gestionesTotales %} {% for cantidad in
-          datos.gestionesTotales %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica1">
-                <h4>Gestiones Totales</h4>
-                <p>{{ cantidad.gestionesTotales }}</p>
-              </div>
+        <!-- Gestionables -->
+        {% if datos.gestionables %} {% for gestionable in datos.gestionables
+        %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Gestionables</h4>
+              <p>{{ gestionable.gestionables }}</p>
             </div>
           </div>
-          {% endfor %} {% else %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica1">
-                <h4>Gestiones Totales</h4>
-                <p>0</p>
-              </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Gestionables</h4>
+              <p>0</p>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Gestionables -->
-          {% if datos.gestionables %} {% for gestionable in datos.gestionables
-          %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Gestionables</h4>
-                <p>{{ gestionable.gestionables }}</p>
-              </div>
+        <!-- Gestionados -->
+        {% if datos.gestionados %} {% for gestionados in datos.gestionados %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Gestionados</h4>
+              <p>{{ gestionados.cantidadGestionados }}</p>
             </div>
           </div>
-          {% endfor %} {% else %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Gestionables</h4>
-                <p>0</p>
-              </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Gestionados</h4>
+              <p>0</p>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Gestionados -->
-          {% if datos.gestionados %} {% for gestionados in datos.gestionados %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Gestionados</h4>
-                <p>{{ gestionados.cantidadGestionados }}</p>
-              </div>
+        <!-- Sin Gestion -->
+        {% if datos.sinGestion %} {% for singestion in datos.sinGestion %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Sin Gestion</h4>
+              <p>{{ singestion.cantidadSinGestion }}</p>
             </div>
           </div>
-          {% endfor %} {% else %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Gestionados</h4>
-                <p>0</p>
-              </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Sin Gestion</h4>
+              <p>0</p>
             </div>
           </div>
-          {% endif %}
+        </div>
+        {% endif %}
 
-          <!-- Sin Gestion -->
-          {% if datos.sinGestion %} {% for singestion in datos.sinGestion %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Sin Gestion</h4>
-                <p>{{ singestion.cantidadSinGestion }}</p>
-              </div>
+        <!-- Con Código y Sin Código -->
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Con Código</h4>
+              <p>{{ datos.codigos.con_codigo | default(0) }}</p>
             </div>
           </div>
-          {% endfor %} {% else %}
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Sin Gestion</h4>
-                <p>0</p>
-              </div>
-            </div>
-          </div>
-          {% endif %}
+        </div>
 
-          <!-- Con Código y Sin Código -->
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Con Código</h4>
-                <p>{{ datos.codigos.con_codigo | default(0) }}</p>
-              </div>
+        <!-- Sin Código -->
+        <div class="tarjeta-individual2">
+          <div class="tarjetas-container">
+            <div class="tarjeta-estadistica">
+              <h4>Sin Código</h4>
+              <p>{{ datos.codigos.sin_codigo | default(0) }}</p>
             </div>
           </div>
+        </div>
 
-          <!-- Sin Código -->
-          <div class="tarjeta-individual2">
-            <div class="tarjetas-container">
-              <div class="tarjeta-estadistica">
-                <h4>Sin Código</h4>
-                <p>{{ datos.codigos.sin_codigo | default(0) }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Código Andes
+        <!-- Código Andes
           {% if datos.codigos %} {% for codigo in datos.codigos %}
           <div class="tarjeta-individual2">
             <div class="tarjetas-container">
@@ -218,68 +213,64 @@
             </div>
           </div>
           {% endif %} -->
-        </section>
-      </div>
+      </section>
+    </div>
 
-      <!-- Sección de estadísticas y filtros -->
-      <section class="stats-filtros">
-        <!-- Estadísticas principales -->
-        <section class="stats">
-          <div class="total-container">
-            <!-- Total Kliikers -->
-            {% if datos.total_kliikers %} {% for total in datos.total_kliikers
-            %}
-            <div class="total-kliikers tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica-kliikers">
-                  <h4>Total Kliikers</h4>
-                  <p>{{ total.total }}</p>
-                </div>
+    <!-- Sección de estadísticas y filtros -->
+    <section class="stats-filtros">
+      <!-- Estadísticas principales -->
+      <section class="stats">
+        <div class="total-container">
+          <!-- Total Kliikers -->
+          {% if datos.total_kliikers %} {% for total in datos.total_kliikers
+          %}
+          <div class="total-kliikers tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica-kliikers">
+                <h4>Total Kliikers</h4>
+                <p>{{ total.total }}</p>
               </div>
-            </div>
-            {% endfor %} {% else %}
-            <div class="total-kliikers tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica-kliikers">
-                  <h4>Total Kliikers</h4>
-                  <p>0</p>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-            <!-- Sin Interés -->
-            {% if datos.sinInteres %} {% for sininteres in datos.sinInteres %}
-            <div class="tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica">
-                  <h4>Sin interes</h4>
-                  <p>{{ sininteres.cantSinInteres }}</p>
-                </div>
-              </div>
-            </div>
-            {% endfor %} {% else %}
-            <div class="tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica">
-                  <h4>Sin interes</h4>
-                  <p>0</p>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-            <div class="logo-container">
-              <img
-                src="/static/img/AndesBPO-Logo.png"
-                alt="Logo de AndesBPO"
-                class="logo-header"
-              />
             </div>
           </div>
+          {% endfor %} {% else %}
+          <div class="total-kliikers tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica-kliikers">
+                <h4>Total Kliikers</h4>
+                <p>0</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
 
-          <div class="llamadas-estados">
-            <!-- Estados de Llamada 
+          <!-- Sin Interés -->
+          {% if datos.sinInteres %} {% for sininteres in datos.sinInteres %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Sin interes</h4>
+                <p>{{ sininteres.cantSinInteres }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Sin interes</h4>
+                <p>0</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="logo-container">
+            <img src="/static/img/AndesBPO-Logo.png" alt="Logo de AndesBPO" class="logo-header" />
+          </div>
+        </div>
+
+        <div class="llamadas-estados">
+          <!-- Estados de Llamada 
             {% if datos.estados %} {% for estado in datos.estados %}
             <div class="tarjeta-individual2">
               <div class="tarjetas-container">
@@ -300,225 +291,350 @@
             </div>
             {% endfor %} {% endif %}-->
 
-            {% set estado_map = {} %} {% if datos.estados %} {% for estado in
-            datos.estados %} {# Convierte id_estado a entero por si acaso #} {%
-            set id = estado.id_estado|int %} {% set _ = estado_map.update({id:
-            estado.cantidadEstados}) %} {% endfor %} {% endif %} {% for i in
-            range(1, 5) %}
-            <div class="tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica">
-                  <h4>Llamada {{ i }}</h4>
-                  <p>{{ estado_map.get(i, 0) }}</p>
-                </div>
+          {% set estado_map = {} %} {% if datos.estados %} {% for estado in
+          datos.estados %} {# Convierte id_estado a entero por si acaso #} {%
+          set id = estado.id_estado|int %} {% set _ = estado_map.update({id:
+          estado.cantidadEstados}) %} {% endfor %} {% endif %} {% for i in
+          range(1, 5) %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Llamada {{ i }}</h4>
+                <p>{{ estado_map.get(i, 0) }}</p>
               </div>
             </div>
-            {% endfor %}
+          </div>
+          {% endfor %}
 
-            <!-- Cierre de Flujo -->
-            {% if datos.cierreFlujo %} {% for cierreflujo in datos.cierreFlujo
-            %}
-            <div class="tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica">
-                  <h4>Flujo Cerrado</h4>
-                  <p>{{ cierreflujo.cantCierreFlujo }}</p>
-                </div>
+          <!-- Cierre de Flujo -->
+          {% if datos.cierreFlujo %} {% for cierreflujo in datos.cierreFlujo
+          %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Flujo Cerrado</h4>
+                <p>{{ cierreflujo.cantCierreFlujo }}</p>
               </div>
             </div>
-            {% endfor %} {% else %}
-            <div class="tarjeta-individual2">
-              <div class="tarjetas-container">
-                <div class="tarjeta-estadistica">
-                  <h4>Flujo Cerrado</h4>
-                  <p>0</p>
-                </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="tarjeta-individual2">
+            <div class="tarjetas-container">
+              <div class="tarjeta-estadistica">
+                <h4>Flujo Cerrado</h4>
+                <p>0</p>
               </div>
             </div>
-            {% endif %}
           </div>
-        </section>
-
-        <!-- Filtros -->
-        <div class="filtros">
-          <div class="filtro2">
-            <div class="contenido">
-              <label class="form-label">Fecha inicio</label>
-              <input
-                type="date"
-                class="form-control date"
-                name="fecha_inicio"
-              />
-            </div>
-
-            <div class="contenido">
-              <label class="form-label">Fecha final</label>
-              <input type="date" class="form-control date" name="fecha_final" />
-            </div>
-
-            <div class="contenido">
-              <label class="form-label">Nivel</label>
-              <select class="select">
-                <option value="">Todos</option>
-                <option value="1">Con codigo</option>
-                <option value="2">Sin codigo</option>
-              </select>
-            </div>
-
-            <div class="contenido">
-              <label class="form-label">Estado</label>
-              <select class="select">
-                <option>Seleccione</option>
-                <option value="1">Llamada 1</option>
-                <option value="2">Llamada 2</option>
-                <option value="3">Llamada 3</option>
-                <option value="4">Llamada 4</option>
-              </select>
-            </div>
-
-            <div class="contenido">
-              <label class="form-label">Tipificaciones</label>
-              <select class="select">
-                <option>Seleccione</option>
-                <option value="1">Buzón de voz</option>
-                <option value="2">Equivocado</option>
-                <option value="3">Información general</option>
-                <option value="4">Interesado a futuro</option>
-                <option value="5">Leed ya compro</option>
-                <option value="6">No contesta</option>
-                <option value="7">Novedad en el registro</option>
-                <option value="8">Registro exitoso</option>
-                <option value="9">Seguimiento</option>
-                <option value="10">Sin interes</option>
-                <option value="11">Volver a llamar</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gráficos -->
-        <div class="chart-container">
-          <div id="graficoAnillo" class="chart"></div>
-          <div id="graficoBarras" class="chart"></div>
-        </div>
-
-        <!-- Estadísticas inferiores -->
-        <div class="containerC">
-          <div class="tarjeta-estadisticaAbajo">
-            <h4>Contactabilidad</h4>
-            <p>
-                {{ "{:,.0f} | {:,.2f}%".format(
-                    datos.contactabilidad | default(0),
-                    datos.contactabilidad_porcentaje | default(0)
-                ) }}
-            </p>
-          </div>
-    
-        <!-- RPC Exitosos -->
-        <div class="tarjeta-estadisticaAbajo">
-            <h4>RPC Exitosos</h4>
-            <p>
-                {{ "{:,.0f} | {:,.2f}%".format(
-                    datos.rpc_exitosos | default(0),
-                    datos.rpc_porcentaje | default(0)
-                ) }}
-            </p>
-        </div>
-
-            <!-- Conversión -->
-            <div class="tarjeta-estadisticaAbajo">
-              <h4>Conversión</h4>
-              <p>
-                {{ "{:,.0f} | {:,.2f}%".format(datos.ventas_exitosas,
-                datos.conversion) }}
-              </p>
-            </div>
-
-            <div class="tarjeta-estadisticaAbajo">
-              <h4>Efectividad</h4>
-              <p>
-                {{ "{:,.0f} | {:,.2f}%".format(datos.ventas_exitosas,
-                datos.efectividad) }}
-              </p>
-            </div>
-          </div>
+          {% endif %}
         </div>
       </section>
-    </div>
 
-    <script>
-      // Scripts originales para gráficos
-      function actualizarGraficos() {
-        fetch("/datos_estadisticas")
-          .then((response) => response.json())
-          .then((data) => {
-            // Actualizar gráfico de barras
-            Plotly.react(
-              "graficoBarras",
-              [
-                {
-                  type: "bar",
-                  x: data.estados.map((item) => item.cantidadEstados),
-                  y: data.estados.map((item) => `Llamada ${item.id_estado}`),
-                  orientation: "h",
-                  marker: {
-                    color: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-                  },
-                },
-              ],
-              {
-                title: "Estados de Gestión",
-                margin: { l: 150, r: 20, t: 90, b: 90 },
-              }
-            );
+      <!-- Filtros -->
+      <div class="filtros">
+        <div class="filtro2">
+          <div class="contenido">
+            <label class="form-label">Fecha inicio</label>
+            <input type="date" class="form-control date" name="fecha_inicio" />
+          </div>
 
-            // Actualizar gráfico de anillo
-            Plotly.react(
-              "graficoAnillo",
-              [
-                {
-                  values: data.tipificaciones.map(
-                    (item) => item.cantidadTipificaciones
-                  ),
-                  labels: data.tipificaciones.map((item) => item.tipificacion),
-                  hole: 0.78,
-                  type: "pie",
-                  marker: {
-                    colors: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-                  },
-                },
-              ],
-              {
-                title: "Tipificaciones",
-                showlegend: false,
-              }
-            );
-          });
+          <div class="contenido">
+            <label class="form-label">Fecha final</label>
+            <input type="date" class="form-control date" name="fecha_final" />
+          </div>
+
+          <div class="contenido">
+            <label class="form-label">Nivel</label>
+            <select class="select">
+              <option value="">Todos</option>
+              <option value="1">Con codigo</option>
+              <option value="2">Sin codigo</option>
+            </select>
+          </div>
+
+          <div class="contenido">
+            <label class="form-label">Estado</label>
+            <select class="select">
+              <option>Seleccione</option>
+              <option value="1">Llamada 1</option>
+              <option value="2">Llamada 2</option>
+              <option value="3">Llamada 3</option>
+              <option value="4">Llamada 4</option>
+            </select>
+          </div>
+
+          <div class="contenido">
+            <label class="form-label">Tipificaciones</label>
+            <select class="select">
+              <option>Seleccione</option>
+              <option value="1">Buzón de voz</option>
+              <option value="2">Equivocado</option>
+              <option value="3">Información general</option>
+              <option value="4">Interesado a futuro</option>
+              <option value="5">Leed ya compro</option>
+              <option value="6">No contesta</option>
+              <option value="7">Novedad en el registro</option>
+              <option value="8">Registro exitoso</option>
+              <option value="9">Seguimiento</option>
+              <option value="10">Sin interes</option>
+              <option value="11">Volver a llamar</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="chart-container">
+        <div id="graficoAnillo" class="chart"></div>
+        <div id="graficoBarras" class="chart"></div>
+      </div>
+
+      <!-- Estadísticas inferiores -->
+      <div class="containerC">
+        <div class="tarjeta-estadisticaAbajo">
+          <h4>Contactabilidad</h4>
+          <p>
+            {{ "{:,.0f} | {:,.2f}%".format(
+            datos.contactabilidad | default(0),
+            datos.contactabilidad_porcentaje | default(0)
+            ) }}
+          </p>
+        </div>
+
+        <!-- RPC Exitosos -->
+        <div class="tarjeta-estadisticaAbajo">
+          <h4>RPC Exitosos</h4>
+          <p>
+            {{ "{:,.0f} | {:,.2f}%".format(
+            datos.rpc_exitosos | default(0),
+            datos.rpc_porcentaje | default(0)
+            ) }}
+          </p>
+        </div>
+
+        <!-- Conversión -->
+        <div class="tarjeta-estadisticaAbajo">
+          <h4>Conversión</h4>
+          <p>
+            {{ "{:,.0f} | {:,.2f}%".format(datos.ventas_exitosas,
+            datos.conversion) }}
+          </p>
+        </div>
+
+        <div class="tarjeta-estadisticaAbajo">
+          <h4>Efectividad</h4>
+          <p>
+            {{ "{:,.0f} | {:,.2f}%".format(datos.ventas_exitosas,
+            datos.efectividad) }}
+          </p>
+        </div>
+      </div>
+  </div>
+  </section>
+  </div>
+
+  <script>
+    // Scripts para gráficos y filtros
+    function actualizarGraficos(filtros = {}) {
+      // Construir URL con parámetros de filtro
+      let url = "/datos_estadisticas";
+      if (Object.keys(filtros).length > 0) {
+        const params = new URLSearchParams();
+        for (const [key, value] of Object.entries(filtros)) {
+          if (value) params.append(key, value);
+        }
+        url += "?" + params.toString();
       }
 
-      // Actualizar cada 5 segundos
-      setInterval(actualizarGraficos, 5000);
-      actualizarGraficos();
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          // Actualizar todas las estadísticas con los nuevos datos
+          actualizarTarjetas(data);
 
-      // Manejo de filtros
-      document.querySelectorAll("input, select").forEach((element) => {
-        element.addEventListener("change", () => {
-          const filtros = {
-            fecha_inicio: document.querySelector('[name="fecha_inicio"]').value,
-            fecha_final: document.querySelector('[name="fecha_final"]').value,
-            nivel: document.querySelectorAll(".select")[0].value,
-            estado: document.querySelectorAll(".select")[1].value,
-            tipificacion: document.querySelectorAll(".select")[2].value,
-          };
+          // Actualizar gráfico de barras
+          const estadosData = data.estados || [];
+          Plotly.react(
+            "graficoBarras",
+            [
+              {
+                type: "bar",
+                x: estadosData.map((item) => item.cantidadEstados),
+                y: estadosData.map((item) => `Llamada ${item.id_estado}`),
+                orientation: "h",
+                marker: {
+                  color: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+                },
+              },
+            ],
+            {
+              title: "Estados de Gestión",
+              margin: { l: 150, r: 20, t: 90, b: 90 },
+            }
+          );
 
-          fetch(`/datos_estadisticas?${new URLSearchParams(filtros)}`)
-            .then((response) => response.json())
-            .then((data) => {
-              // Aquí deberías actualizar todas las estadísticas con los nuevos datos
-              // (Implementar lógica de actualización similar a la inicial)
-            });
+          // Actualizar gráfico de anillo
+          const tipificacionesData = data.tipificaciones || [];
+          Plotly.react(
+            "graficoAnillo",
+            [
+              {
+                values: tipificacionesData.map(
+                  (item) => item.cantidadTipificaciones
+                ),
+                labels: tipificacionesData.map((item) => item.tipificacion),
+                hole: 0.78,
+                type: "pie",
+                marker: {
+                  colors: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+                },
+              },
+            ],
+            {
+              title: "Tipificaciones",
+              showlegend: false,
+            }
+          );
+        })
+        .catch(error => {
+          console.error("Error al obtener datos:", error);
         });
+    }
+
+    // Función para actualizar todas las tarjetas con los nuevos datos
+    function actualizarTarjetas(data) {
+      // Actualizar ventas
+      if (data.ventas && data.ventas.length > 0) {
+        document.querySelector('.total-ventas p').textContent = data.ventas[0].ventasExitosas;
+      } else {
+        document.querySelector('.total-ventas p').textContent = '0';
+      }
+
+      // Actualizar gestiones totales
+      if (data.gestionesTotales && data.gestionesTotales.length > 0) {
+        document.querySelector('.tarjeta-estadistica1 p').textContent = data.gestionesTotales[0].gestionesTotales;
+      } else {
+        document.querySelector('.tarjeta-estadistica1 p').textContent = '0';
+      }
+
+      // Actualizar gestionables
+      if (data.gestionables && data.gestionables.length > 0) {
+        document.querySelectorAll('.tarjeta-estadistica p')[0].textContent = data.gestionables[0].gestionables;
+      } else {
+        document.querySelectorAll('.tarjeta-estadistica p')[0].textContent = '0';
+      }
+
+      // Actualizar gestionados
+      if (data.gestionados && data.gestionados.length > 0) {
+        document.querySelectorAll('.tarjeta-estadistica p')[1].textContent = data.gestionados[0].cantidadGestionados;
+      } else {
+        document.querySelectorAll('.tarjeta-estadistica p')[1].textContent = '0';
+      }
+
+      // Actualizar sin gestión
+      if (data.sinGestion && data.sinGestion.length > 0) {
+        document.querySelectorAll('.tarjeta-estadistica p')[2].textContent = data.sinGestion[0].cantidadSinGestion;
+      } else {
+        document.querySelectorAll('.tarjeta-estadistica p')[2].textContent = '0';
+      }
+
+      // Actualizar con código y sin código
+      if (data.codigos) {
+        document.querySelectorAll('.tarjeta-estadistica p')[3].textContent = data.codigos.con_codigo || '0';
+        document.querySelectorAll('.tarjeta-estadistica p')[4].textContent = data.codigos.sin_codigo || '0';
+      } else {
+        document.querySelectorAll('.tarjeta-estadistica p')[3].textContent = '0';
+        document.querySelectorAll('.tarjeta-estadistica p')[4].textContent = '0';
+      }
+
+      // Actualizar total kliikers
+      if (data.total_kliikers && data.total_kliikers.length > 0) {
+        document.querySelector('.tarjeta-estadistica-kliikers p').textContent = data.total_kliikers[0].total;
+      } else {
+        document.querySelector('.tarjeta-estadistica-kliikers p').textContent = '0';
+      }
+
+      // Actualizar sin interés
+      if (data.sinInteres && data.sinInteres.length > 0) {
+        document.querySelectorAll('.tarjeta-estadistica p')[5].textContent = data.sinInteres[0].cantSinInteres;
+      } else {
+        document.querySelectorAll('.tarjeta-estadistica p')[5].textContent = '0';
+      }
+
+      // Actualizar estados de llamada
+      const estadoMap = {};
+      if (data.estados) {
+        data.estados.forEach(estado => {
+          estadoMap[estado.id_estado] = estado.cantidadEstados;
+        });
+      }
+
+      // Actualizar los 4 estados de llamada
+      const llamadaElements = document.querySelectorAll('.llamadas-estados .tarjeta-estadistica');
+      for (let i = 0; i < 4; i++) {
+        llamadaElements[i].querySelector('p').textContent = estadoMap[i + 1] || '0';
+      }
+
+      // Actualizar flujo cerrado
+      if (data.cierreFlujo && data.cierreFlujo.length > 0) {
+        document.querySelectorAll('.llamadas-estados .tarjeta-estadistica')[4].querySelector('p').textContent =
+          data.cierreFlujo[0].cantCierreFlujo;
+      } else {
+        document.querySelectorAll('.llamadas-estados .tarjeta-estadistica')[4].querySelector('p').textContent = '0';
+      }
+
+      // Actualizar estadísticas inferiores
+      const contactabilidad = data.contactabilidad || 0;
+      const contactabilidad_porcentaje = data.contactabilidad_porcentaje || 0;
+      document.querySelectorAll('.tarjeta-estadisticaAbajo p')[0].textContent =
+        `${contactabilidad.toLocaleString('es-ES')} | ${contactabilidad_porcentaje.toFixed(2)}%`;
+
+      const rpc_exitosos = data.rpc_exitosos || 0;
+      const rpc_porcentaje = data.rpc_porcentaje || 0;
+      document.querySelectorAll('.tarjeta-estadisticaAbajo p')[1].textContent =
+        `${rpc_exitosos.toLocaleString('es-ES')} | ${rpc_porcentaje.toFixed(2)}%`;
+
+      const ventas_exitosas = data.ventas_exitosas || 0;
+      const conversion = data.conversion || 0;
+      document.querySelectorAll('.tarjeta-estadisticaAbajo p')[2].textContent =
+        `${ventas_exitosas.toLocaleString('es-ES')} | ${conversion.toFixed(2)}%`;
+
+      const efectividad = data.efectividad || 0;
+      document.querySelectorAll('.tarjeta-estadisticaAbajo p')[3].textContent =
+        `${ventas_exitosas.toLocaleString('es-ES')} | ${efectividad.toFixed(2)}%`;
+    }
+
+    // Actualizar cada 5 segundos solo si no hay filtros activos
+    let intervaloActualizacion = setInterval(actualizarGraficos, 5000);
+    let filtrosActivos = false;
+
+    // Manejo de filtros
+    document.querySelectorAll("input, select").forEach((element) => {
+      element.addEventListener("change", () => {
+        // Detener la actualización automática cuando se aplican filtros
+        if (!filtrosActivos) {
+          clearInterval(intervaloActualizacion);
+          filtrosActivos = true;
+        }
+
+        const filtros = {
+          fecha_inicio: document.querySelector('[name="fecha_inicio"]').value,
+          fecha_final: document.querySelector('[name="fecha_final"]').value,
+          nivel: document.querySelectorAll(".select")[0].value,
+          estado: document.querySelectorAll(".select")[1].value,
+          tipificacion: document.querySelectorAll(".select")[2].value,
+        };
+
+        // Actualizar con los filtros aplicados
+        actualizarGraficos(filtros);
       });
-    </script>
-  </body>
+    });
+
+    // Inicializar gráficos al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+      actualizarGraficos();
+    });
+  </script>
+</body>
+
 </html>
