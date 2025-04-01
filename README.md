@@ -1,2 +1,2 @@
 # Kliiker project
-Some things
+Some thing
