@@ -1,10 +1,10 @@
 # Importación de módulos necesarios
 import os
-from flask_mysqldb import MySQL
-
+#from flask_mysqldb import MySQL
+import mysql.connector
 
 # Inicialización del objeto MySQL
-mysql = MySQL()
+#mysql = MySQL()
 
 
 def db_conexion(app):
@@ -12,43 +12,52 @@ def db_conexion(app):
     Configura la conexión a la base de datos MySQL para la aplicación Flask.
     Utiliza variables de entorno para la configuración, con valores por defecto si no están definidas.
     """
+
+    app.config['DB'] = mysql.connector.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "root"),
+        password=os.getenv("DB_PASSWORD", ""),
+        database=os.getenv("DB_NAME", "kliiker"),
+        port=int(os.getenv("DB_PORT", 3306))
+    )
+
     # Configuración básica de conexión
     # HOST: Dirección del servidor MySQL (por defecto: localhost)
-    app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST", "localhost")
+    #app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST", "localhost")
     # USER: Usuario de MySQL (por defecto: root)
-    app.config["MYSQL_USER"] = os.getenv("MYSQL_USER", "root")
+    #app.config["MYSQL_USER"] = os.getenv("MYSQL_USER", "root")
     # PASSWORD: Contraseña del usuario MySQL (por defecto: vacío)
-    app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD", "")
+    #app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD", "")
     # DB: Nombre de la base de datos a utilizar (por defecto: kliiker)
-    app.config["MYSQL_DB"] = os.getenv("MYSQL_DB", "kliiker1")
+    #app.config["MYSQL_DB"] = os.getenv("MYSQL_DB", "kliiker1")
 
     # Configuración avanzada de MySQL
     # Puerto de conexión MySQL (por defecto: 3306)
-    app.config["MYSQL_PORT"] = int(os.getenv("MYSQL_PORT", 3306))
+    #app.config["MYSQL_PORT"] = int(os.getenv("MYSQL_PORT", 3306))
     # Socket Unix para conexiones locales
-    app.config["MYSQL_UNIX_SOCKET"] = None
+    #app.config["MYSQL_UNIX_SOCKET"] = None
     # Tiempo máximo de espera para la conexión en segundos
-    app.config["MYSQL_CONNECT_TIMEOUT"] = int(os.getenv("MYSQL_CONNECT_TIMEOUT", 10))
+    #app.config["MYSQL_CONNECT_TIMEOUT"] = int(os.getenv("MYSQL_CONNECT_TIMEOUT", 10))
     # Archivo de configuración MySQL adicional
-    app.config["MYSQL_READ_DEFAULT_FILE"] = None
+    #app.config["MYSQL_READ_DEFAULT_FILE"] = None
     # Soporte para caracteres Unicode
-    app.config["MYSQL_USE_UNICODE"] = True
+    #app.config["MYSQL_USE_UNICODE"] = True
     # Codificación de caracteres (utf8mb4 soporta emojis y caracteres especiales)
-    app.config["MYSQL_CHARSET"] = "utf8mb4"
+    #app.config["MYSQL_CHARSET"] = "utf8mb4"
     # Modo SQL personalizado
-    app.config["MYSQL_SQL_MODE"] = None
+    #app.config["MYSQL_SQL_MODE"] = None
     # Tipo de cursor (DictCursor retorna resultados como diccionarios)
-    app.config["MYSQL_CURSORCLASS"] = "DictCursor"
+    #app.config["MYSQL_CURSORCLASS"] = "DictCursor"
     # Desactivar autocommit para control manual de transacciones
-    app.config["MYSQL_AUTOCOMMIT"] = False
+    #app.config["MYSQL_AUTOCOMMIT"] = False
     # Modo SSL para conexiones seguras
-    app.config["MYSQL_SSL_MODE"] = os.getenv("MYSQL_SSL_MODE", None)
+    #app.config["MYSQL_SSL_MODE"] = os.getenv("MYSQL_SSL_MODE", None)
 
     # Clave secreta para sesiones y tokens CSRF (por defecto: 1234567890)
-    app.secret_key = os.getenv("SECRET_KEY", "1234567890")
+    #app.secret_key = os.getenv("SECRET_KEY", "1234567890")
 
     # Inicialización de la extensión MySQL con la configuración establecida
-    mysql.init_app(app)
+    #mysql.init_app(app)
 
 
 mysql = MySQL()
