@@ -1,10 +1,10 @@
 # Importación de módulos necesarios
 import os
-#from flask_mysqldb import MySQL
+# from flask_mysqldb import MySQL
 import mysql.connector
 
 # Inicialización del objeto MySQL
-#mysql = MySQL()
+# #mysql = MySQL()
 
 
 def db_conexion(app):
@@ -60,4 +60,4 @@ def db_conexion(app):
     #mysql.init_app(app)
 
 
-mysql = MySQL()
+# mysql = MySQL()
